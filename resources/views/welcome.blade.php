@@ -6,7 +6,7 @@
         <title>{{ config('app.name', 'JWT CRUD') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-gray-100">
+    <body>
         <div id="app"></div>
     </body>
 </html>

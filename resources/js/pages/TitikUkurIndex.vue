@@ -1,127 +1,122 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div class="page-wrapper">
+    <div class="page-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Titik Ukur</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola data titik pengukuran</p>
+        <h1 class="page-title mb-1">Titik Ukur</h1>
+        <p class="text-muted small">Kelola data titik pengukuran</p>
       </div>
-      <div class="flex items-center gap-2">
-        <button @click="openForm()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-          Tambah Titik Ukur
+      <div class="d-flex align-items-center gap-2">
+        <button @click="openForm()" class="btn btn-primary">
+          + Tambah Titik Ukur
         </button>
-        <button @click="toggleTrashed" :class="['inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors', showTrashed ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600']">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning' : 'btn btn-outline-secondary'">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-3">
-      <div class="relative flex-1">
-        <input v-model="search" type="text" placeholder="Cari nama, kode, alamat..." class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" @input="fetchData" />
-        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+    <div class="d-flex flex-column flex-sm-row gap-3 mb-4">
+      <div class="flex-fill">
+        <input v-model="search" type="text" placeholder="Cari nama, kode, alamat..." class="form-control" @input="fetchData" />
       </div>
-      <select v-model="filterGardu" class="text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" @change="fetchData">
+      <select v-model="filterGardu" class="form-select" style="width: auto;" @change="fetchData">
         <option value="">Semua Gardu Induk</option>
         <option v-for="gi in allGarduInduks" :key="gi.id" :value="gi.id">{{ gi.name }}</option>
       </select>
-      <select v-model="filterStatus" class="text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" @change="fetchData">
+      <select v-model="filterStatus" class="form-select" style="width: auto;" @change="fetchData">
         <option value="">Semua Status</option>
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
       </select>
     </div>
 
-    <div v-if="!showTrashed" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+    <div v-if="!showTrashed" class="card mb-4">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-vcenter">
           <thead>
-            <tr class="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Kode</th>
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Nama</th>
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Gardu Induk</th>
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Alamat</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Total Meter</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Status</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Aksi</th>
+            <tr>
+              <th>Kode</th>
+              <th>Nama</th>
+              <th>Gardu Induk</th>
+              <th>Alamat</th>
+              <th class="text-center">Total Meter</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="tu in titikUkurs" :key="tu.id" class="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-              <td class="px-6 py-3.5 font-mono text-xs font-semibold text-gray-900 dark:text-white">{{ tu.code }}</td>
-              <td class="px-6 py-3.5 font-medium text-gray-900 dark:text-white">{{ tu.name }}</td>
-              <td class="px-6 py-3.5 text-gray-600 dark:text-gray-400">{{ tu.gardu_induk?.name }}</td>
-              <td class="px-6 py-3.5 text-gray-500 dark:text-gray-400 text-xs max-w-[200px] truncate">{{ tu.address || '-' }}</td>
-              <td class="px-6 py-3.5 text-center">
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 font-semibold text-xs">{{ tu.konfigurasi_meters_count }}</span>
+            <tr v-for="tu in titikUkurs" :key="tu.id">
+              <td class="font-monospace fw-semibold small">{{ tu.code }}</td>
+              <td class="fw-medium">{{ tu.name }}</td>
+              <td>{{ tu.gardu_induk?.name }}</td>
+              <td class="small text-truncate" style="max-width:200px;">{{ tu.address || '-' }}</td>
+              <td class="text-center">
+                <span class="badge bg-secondary">{{ tu.konfigurasi_meters_count }}</span>
               </td>
-              <td class="px-6 py-3.5 text-center">
-                <span :class="['inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold', tu.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400']">
-                  <span :class="['w-1.5 h-1.5 rounded-full', tu.status === 'active' ? 'bg-green-500' : 'bg-gray-400']"></span>
+              <td class="text-center">
+                <span :class="tu.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'">
                   {{ tu.status }}
                 </span>
               </td>
-              <td class="px-6 py-3.5 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button @click="openForm(tu)" class="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Edit">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+              <td class="text-center">
+                <div class="d-inline-flex gap-1">
+                  <button @click="openForm(tu)" class="btn btn-sm btn-outline-primary" title="Edit">
+                    Edit
                   </button>
-                  <button @click="confirmDelete(tu)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                  <button @click="confirmDelete(tu)" class="btn btn-sm btn-outline-danger" title="Hapus">
+                    Hapus
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="!titikUkurs.length">
-              <td colspan="7" class="px-6 py-12 text-center text-gray-400 dark:text-gray-500">Tidak ada data titik ukur</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data titik ukur</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div v-else class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-      <div class="px-6 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-        <p class="text-sm font-medium text-amber-700 dark:text-amber-400">Data yang sudah dihapus dapat dipulihkan kembali</p>
+    <div v-else class="card mb-4">
+      <div class="card-status alert alert-warning mb-0">
+        <span class="small fw-medium">Data yang sudah dihapus dapat dipulihkan kembali</span>
       </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-vcenter">
           <thead>
-            <tr class="border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Kode</th>
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Nama</th>
-              <th class="text-left px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Gardu Induk</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Status</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Dihapus</th>
-              <th class="text-center px-6 py-3 font-semibold text-gray-600 dark:text-gray-300">Aksi</th>
+            <tr>
+              <th>Kode</th>
+              <th>Nama</th>
+              <th>Gardu Induk</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Dihapus</th>
+              <th class="text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="tu in trashedList" :key="tu.id" class="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors opacity-70">
-              <td class="px-6 py-3.5 font-mono text-xs font-semibold text-gray-900 dark:text-white">{{ tu.code }}</td>
-              <td class="px-6 py-3.5 font-medium text-gray-900 dark:text-white">{{ tu.name }}</td>
-              <td class="px-6 py-3.5 text-gray-600 dark:text-gray-400">{{ tu.gardu_induk?.name }}</td>
-              <td class="px-6 py-3.5 text-center">
-                <span :class="['inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold', tu.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400']">
-                  <span :class="['w-1.5 h-1.5 rounded-full', tu.status === 'active' ? 'bg-green-500' : 'bg-gray-400']"></span>
+          <tbody class="opacity-75">
+            <tr v-for="tu in trashedList" :key="tu.id">
+              <td class="font-monospace fw-semibold small">{{ tu.code }}</td>
+              <td class="fw-medium">{{ tu.name }}</td>
+              <td>{{ tu.gardu_induk?.name }}</td>
+              <td class="text-center">
+                <span :class="tu.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'">
                   {{ tu.status }}
                 </span>
               </td>
-              <td class="px-6 py-3.5 text-center text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(tu.deleted_at) }}</td>
-              <td class="px-6 py-3.5 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button @click="restoreItem(tu)" class="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" title="Pulihkan">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/></svg>
+              <td class="text-center small text-muted">{{ formatDateTime(tu.deleted_at) }}</td>
+              <td class="text-center">
+                <div class="d-inline-flex gap-1">
+                  <button @click="restoreItem(tu)" class="btn btn-sm btn-outline-success" title="Pulihkan">
+                    Pulihkan
                   </button>
-                  <button @click="forceDeleteItem(tu)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus Permanent">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                  <button @click="forceDeleteItem(tu)" class="btn btn-sm btn-outline-danger" title="Hapus Permanent">
+                    Hapus
                   </button>
                 </div>
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="px-6 py-12 text-center text-gray-400 dark:text-gray-500">Tidak ada data terhapus</td>
+              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>
@@ -129,78 +124,81 @@
     </div>
 
     <Teleport to="body">
-      <div v-if="showForm" class="fixed inset-0 z-[10000] flex items-start sm:items-center justify-center p-4 pt-20">
-        <div class="absolute inset-0 bg-black/50" @click="showForm = false"></div>
-        <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ editingId ? 'Edit Titik Ukur' : 'Tambah Titik Ukur' }}</h3>
-          <EditingIndicator
-            :visible="isEditingByOthers"
-            :message="warningMessage"
-            :editors="otherEditors"
-          />
-          <form @submit.prevent="saveForm" class="space-y-4">
-            <div class="relative">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
-              <input v-model="form.name" type="text" required
-                class="w-full text-sm border rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                :class="getFieldEditors('name').length ? 'border-amber-400 dark:border-amber-600 focus:ring-amber-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'"
-                @focus="broadcastFieldEditing('name')" @blur="broadcastFieldEditing(null)" />
-              <FieldEditorBadge v-if="getFieldEditors('name').length" :editors="getFieldEditors('name')" />
+      <div v-if="showForm" class="modal d-block" style="background:rgba(0,0,0,.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 class="modal-title">{{ editingId ? 'Edit Titik Ukur' : 'Tambah Titik Ukur' }}</h3>
+              <button type="button" class="btn-close" @click="closeForm"></button>
             </div>
-            <div class="relative">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kode</label>
-              <input v-model="form.code" type="text" required
-                class="w-full text-sm border rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                :class="getFieldEditors('code').length ? 'border-amber-400 dark:border-amber-600 focus:ring-amber-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'"
-                @focus="broadcastFieldEditing('code')" @blur="broadcastFieldEditing(null)" />
-              <FieldEditorBadge v-if="getFieldEditors('code').length" :editors="getFieldEditors('code')" />
+            <div class="modal-body">
+              <EditingIndicator
+                :visible="isEditingByOthers"
+                :message="warningMessage"
+                :editors="otherEditors"
+              />
+              <form @submit.prevent="saveForm">
+                <div class="mb-3">
+                  <label class="form-label">Nama</label>
+                  <input v-model="form.name" type="text" required class="form-control"
+                    :class="getFieldEditors('name').length ? 'is-warning' : ''"
+                    @focus="broadcastFieldEditing('name')" @blur="broadcastFieldEditing(null)" />
+                  <FieldEditorBadge v-if="getFieldEditors('name').length" :editors="getFieldEditors('name')" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Kode</label>
+                  <input v-model="form.code" type="text" required class="form-control"
+                    :class="getFieldEditors('code').length ? 'is-warning' : ''"
+                    @focus="broadcastFieldEditing('code')" @blur="broadcastFieldEditing(null)" />
+                  <FieldEditorBadge v-if="getFieldEditors('code').length" :editors="getFieldEditors('code')" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Gardu Induk</label>
+                  <select v-model="form.gardu_induk_id" required class="form-select">
+                    <option value="">Pilih Gardu Induk</option>
+                    <option v-for="gi in allGarduInduks" :key="gi.id" :value="gi.id">{{ gi.name }}</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Alamat</label>
+                  <input v-model="form.address" type="text" class="form-control"
+                    :class="getFieldEditors('address').length ? 'is-warning' : ''"
+                    @focus="broadcastFieldEditing('address')" @blur="broadcastFieldEditing(null)" />
+                  <FieldEditorBadge v-if="getFieldEditors('address').length" :editors="getFieldEditors('address')" />
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Latitude</label>
+                    <input v-model="form.latitude" type="number" step="any" class="form-control"
+                      :class="getFieldEditors('latitude').length ? 'is-warning' : ''"
+                      @focus="broadcastFieldEditing('latitude')" @blur="broadcastFieldEditing(null)" />
+                    <FieldEditorBadge v-if="getFieldEditors('latitude').length" :editors="getFieldEditors('latitude')" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Longitude</label>
+                    <input v-model="form.longitude" type="number" step="any" class="form-control"
+                      :class="getFieldEditors('longitude').length ? 'is-warning' : ''"
+                      @focus="broadcastFieldEditing('longitude')" @blur="broadcastFieldEditing(null)" />
+                    <FieldEditorBadge v-if="getFieldEditors('longitude').length" :editors="getFieldEditors('longitude')" />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Status</label>
+                  <select v-model="form.status" class="form-select">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                <div v-if="formError" class="text-danger small mb-3">{{ formError }}</div>
+                <div class="d-flex gap-3 pt-2">
+                  <button type="button" @click="closeForm" class="flex-fill btn btn-outline-secondary">Batal</button>
+                  <button type="submit" :disabled="saving" class="flex-fill btn btn-primary">
+                    {{ saving ? 'Menyimpan...' : 'Simpan' }}
+                  </button>
+                </div>
+              </form>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gardu Induk</label>
-              <select v-model="form.gardu_induk_id" required class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">Pilih Gardu Induk</option>
-                <option v-for="gi in allGarduInduks" :key="gi.id" :value="gi.id">{{ gi.name }}</option>
-              </select>
-            </div>
-            <div class="relative">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat</label>
-              <input v-model="form.address" type="text"
-                class="w-full text-sm border rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                :class="getFieldEditors('address').length ? 'border-amber-400 dark:border-amber-600 focus:ring-amber-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'"
-                @focus="broadcastFieldEditing('address')" @blur="broadcastFieldEditing(null)" />
-              <FieldEditorBadge v-if="getFieldEditors('address').length" :editors="getFieldEditors('address')" />
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Latitude</label>
-                <input v-model="form.latitude" type="number" step="any"
-                  class="w-full text-sm border rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                  :class="getFieldEditors('latitude').length ? 'border-amber-400 dark:border-amber-600 focus:ring-amber-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'"
-                  @focus="broadcastFieldEditing('latitude')" @blur="broadcastFieldEditing(null)" />
-                <FieldEditorBadge v-if="getFieldEditors('latitude').length" :editors="getFieldEditors('latitude')" />
-              </div>
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Longitude</label>
-                <input v-model="form.longitude" type="number" step="any"
-                  class="w-full text-sm border rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                  :class="getFieldEditors('longitude').length ? 'border-amber-400 dark:border-amber-600 focus:ring-amber-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'"
-                  @focus="broadcastFieldEditing('longitude')" @blur="broadcastFieldEditing(null)" />
-                <FieldEditorBadge v-if="getFieldEditors('longitude').length" :editors="getFieldEditors('longitude')" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-              <select v-model="form.status" class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            <div class="flex gap-3 pt-2">
-              <button type="button" @click="closeForm" class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-colors">Batal</button>
-              <button type="submit" :disabled="saving" class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50">{{ saving ? 'Menyimpan...' : 'Simpan' }}</button>
-            </div>
-          </form>
-          <p v-if="formError" class="mt-3 text-sm text-red-600 dark:text-red-400">{{ formError }}</p>
+          </div>
         </div>
       </div>
     </Teleport>
