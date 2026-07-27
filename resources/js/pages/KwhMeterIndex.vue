@@ -15,6 +15,8 @@
             >
               + Tambah Meter
             </button>
+            <a href="/api/export/meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+            <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
             <button @click="toggleTrashed" :class="['btn', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
               {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
             </button>
@@ -280,6 +282,36 @@
       </div>
     </Teleport>
 
+    <Teleport to="body">
+      <div v-if="showImport" class="modal d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Impor Data KWH Meter</h5>
+              <button type="button" class="btn-close" @click="showImport = false"></button>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted small mb-3">Upload file CSV dengan format yang sesuai template.</p>
+              <div class="mb-3">
+                <label class="form-label">Pilih File CSV</label>
+                <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
+              </div>
+              <a href="/api/import/template?type=meters" class="text-decoration-none small" target="_blank">Download Template</a>
+              <div v-if="importResult" :class="['alert mt-3', importResult.success !== false ? 'alert-success' : 'alert-danger']">
+                {{ importResult.message || JSON.stringify(importResult) }}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" @click="showImport = false">Batal</button>
+              <button type="button" class="btn btn-primary" :disabled="!importFile || importing" @click="handleImport">
+                {{ importing ? 'Mengimpor...' : 'Impor' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <ConfirmDialog ref="confirmDialogRef" />
   </div>
 </template>
@@ -308,6 +340,10 @@ const { isEditingByOthers, warningMessage, otherEditors, otherFieldChanges, star
 const saving = ref(false)
 const formError = ref('')
 const pagination = ref({ current_page: 1, last_page: 1, from: 0, to: 0, total: 0 })
+const showImport = ref(false)
+const importFile = ref(null)
+const importing = ref(false)
+const importResult = ref(null)
 
 const form = ref({
   meter_no: '',
@@ -437,6 +473,20 @@ async function forceDeleteItem(item) {
 
 function goToPage(page) {
   fetchData(page)
+}
+
+async function handleImport() {
+  if (!importFile.value) return
+  importing.value = true; importResult.value = null
+  try {
+    const fd = new FormData()
+    fd.append('file', importFile.value)
+    fd.append('type', 'meters')
+    const { data: res } = await api.post('/import', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    importResult.value = res; importFile.value = null; fetchData()
+  } catch (e) {
+    importResult.value = { success: false, message: e.response?.data?.message || 'Import gagal' }
+  } finally { importing.value = false }
 }
 
 function openForm(meter = null) {

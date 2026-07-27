@@ -16,6 +16,8 @@
         <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning d-inline-flex align-items-center gap-2' : 'btn btn-outline-secondary d-inline-flex align-items-center gap-2'">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
+        <a :href="'/api/export/gardu-induks'" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
       </div>
     </div>
 
@@ -106,6 +108,16 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <div v-if="pagination.last_page > 1" class="card-footer d-flex align-items-center justify-content-between">
+        <p class="text-muted mb-0 small">
+          Menampilkan {{ pagination.from }}-{{ pagination.to }} dari {{ pagination.total }} data
+        </p>
+        <ul class="pagination pagination-sm mb-0">
+          <li v-for="page in pagination.last_page" :key="page" :class="['page-item', page === pagination.current_page ? 'active' : '']">
+            <button class="page-link" @click="goToPage(page)">{{ page }}</button>
+          </li>
+        </ul>
       </div>
     </div>
 
@@ -258,6 +270,39 @@
 
     <Toast ref="toastRef" />
     <ConfirmDialog ref="confirmDialogRef" />
+
+    <!-- Import Modal -->
+    <Teleport to="body">
+      <div v-if="showImport" class="modal d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Impor Data Gardu Induk</h5>
+              <button type="button" class="btn-close" @click="showImport = false"></button>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted small mb-3">Upload file CSV dengan format yang sesuai template.</p>
+              <div class="mb-3">
+                <label class="form-label">Pilih File CSV</label>
+                <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <a :href="'/api/import/template?type=gardu_induks'" class="text-decoration-none small" target="_blank">Download Template</a>
+              </div>
+              <div v-if="importResult" :class="['alert', importResult.success !== false ? 'alert-success' : 'alert-danger']">
+                {{ importResult.message || JSON.stringify(importResult) }}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" @click="showImport = false">Batal</button>
+              <button type="button" class="btn btn-primary" :disabled="!importFile || importing" @click="handleImport">
+                {{ importing ? 'Mengimpor...' : 'Impor' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -284,6 +329,12 @@ const trashedList = ref([])
 const showForm = ref(false)
 const editingId = ref(null)
 const editingRecordId = ref(null)
+const pagination = ref({ current_page: 1, last_page: 1, from: 0, to: 0, total: 0 })
+const showImport = ref(false)
+const importFile = ref(null)
+const importType = ref('gardu_induks')
+const importing = ref(false)
+const importResult = ref(null)
 const {
   isEditingByOthers, warningMessage, otherEditors, otherFieldChanges,
   startEditing, stopEditing,
@@ -340,16 +391,27 @@ watch(otherFieldChanges, () => {
   }
 })
 
-async function fetchData() {
+async function fetchData(page = 1) {
   try {
-    const params = {}
+    const params = { page }
     if (search.value) params.search = search.value
     if (filterStatus.value) params.status = filterStatus.value
     const { data: res } = await api.get('/gardu-induks', { params })
-    garduInduks.value = res.data
+    garduInduks.value = res.data.data
+    pagination.value = {
+      current_page: res.data.current_page,
+      last_page: res.data.last_page,
+      from: res.data.from,
+      to: res.data.to,
+      total: res.data.total,
+    }
   } catch (e) {
     console.error('Failed to fetch gardu induks', e)
   }
+}
+
+function goToPage(page) {
+  fetchData(page)
 }
 
 async function fetchTrashed() {
@@ -456,6 +518,27 @@ function closeForm() {
   stopEditing()
   showForm.value = false
   editingRecordId.value = null
+}
+
+async function handleImport() {
+  if (!importFile.value) return
+  importing.value = true
+  importResult.value = null
+  try {
+    const formData = new FormData()
+    formData.append('file', importFile.value)
+    formData.append('type', importType.value)
+    const { data: res } = await api.post('/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    importResult.value = res
+    importFile.value = null
+    fetchData()
+  } catch (e) {
+    importResult.value = { success: false, message: e.response?.data?.message || 'Import gagal' }
+  } finally {
+    importing.value = false
+  }
 }
 
 async function confirmDelete(gi) {
