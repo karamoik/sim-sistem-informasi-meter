@@ -1,0 +1,10 @@
+@import "@tabler/core/dist/css/tabler.min.css";
+@import "@tabler/core/dist/css/tabler-vendors.min.css";
+
+:root {
+    --tblr-font-sans-serif: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+    font-family: var(--tblr-font-sans-serif);
+}
