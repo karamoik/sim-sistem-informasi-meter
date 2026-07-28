@@ -16,7 +16,7 @@
         <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning' : 'btn btn-outline-secondary'">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
-        <a :href="'/api/export/gardu-induks'" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="handleExport" class="btn btn-outline-secondary">Ekspor CSV</button>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
       </div>
     </div>
@@ -75,7 +75,7 @@
                 <span class="badge text-bg-blue">{{ gi.online_count }}</span>
               </td>
               <td class="text-center">
-                <span :class="gi.offline_count > 0 ? 'badge bg-red' : 'text-muted'">{{ gi.offline_count }}</span>
+                <span :class="gi.offline_count > 0 ? 'badge text-bg-red' : 'text-muted'">{{ gi.offline_count }}</span>
               </td>
               <td class="text-center">
                 <span
@@ -291,7 +291,7 @@
                 <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
               </div>
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <a :href="'/api/import/template?type=gardu_induks'" class="text-decoration-none small" target="_blank">Download Template</a>
+                <button type="button" class="btn btn-link p-0 text-decoration-none small" @click="downloadTemplate">Download Template</button>
               </div>
               <div v-if="importResult" :class="['alert', importResult.success !== false ? 'alert-success' : 'alert-danger']">
                 {{ importResult.message || JSON.stringify(importResult) }}
@@ -523,6 +523,32 @@ function closeForm() {
   stopEditing()
   showForm.value = false
   editingRecordId.value = null
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  try {
+    const { data, headers } = await api.get('/export/gardu-induks', { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'gardu_induks.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh data') }
+}
+
+async function downloadTemplate() {
+  try {
+    const { data, headers } = await api.get('/import/template', { params: { type: 'gardu_induks' }, responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'template_gardu_induks.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh template') }
 }
 
 async function handleImport() {

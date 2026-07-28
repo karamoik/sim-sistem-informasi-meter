@@ -10,7 +10,7 @@
           + Tambah Titik Ukur
         </button>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
-        <a :href="'/api/export/titik-ukurs'" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="handleExport" class="btn btn-outline-secondary">Ekspor CSV</button>
         <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning' : 'btn btn-outline-secondary'">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
@@ -233,7 +233,7 @@
                 <label class="form-label">Pilih File CSV</label>
                 <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
               </div>
-              <a :href="'/api/import/template?type=titik_ukurs'" class="text-decoration-none small" target="_blank">Download Template</a>
+              <button type="button" class="btn btn-link p-0 text-decoration-none small" @click="downloadTemplate">Download Template</button>
               <div v-if="importResult" :class="['alert', importResult.success !== false ? 'alert-success' : 'alert-danger']" class="mt-3">
                 {{ importResult.message || JSON.stringify(importResult) }}
               </div>
@@ -343,6 +343,32 @@ async function fetchData(page = 1) {
 }
 
 function goToPage(page) { fetchData(page) }
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  try {
+    const { data, headers } = await api.get('/export/titik-ukurs', { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'titik_ukurs.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh data') }
+}
+
+async function downloadTemplate() {
+  try {
+    const { data, headers } = await api.get('/import/template', { params: { type: 'titik_ukurs' }, responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'template_titik_ukurs.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh template') }
+}
 
 async function handleImport() {
   if (!importFile.value) return

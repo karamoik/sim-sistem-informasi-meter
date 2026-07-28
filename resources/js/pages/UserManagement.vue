@@ -77,7 +77,7 @@
                 <span v-else class="text-muted fst-italic">Semua unit (admin)</span>
               </td>
               <td class="text-center">
-                <span class="badge" :class="user.is_active ? 'bg-success' : 'bg-secondary'">
+                <span class="badge" :class="user.is_active ? 'text-bg-success' : 'text-bg-secondary'">
                   {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
                 </span>
               </td>

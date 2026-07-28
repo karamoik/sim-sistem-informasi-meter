@@ -13,7 +13,7 @@
         >
           + Tambah Meter
         </button>
-        <a href="/api/export/meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="handleExport" class="btn btn-outline-secondary">Ekspor CSV</button>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
         <button @click="toggleTrashed" :class="['btn', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
@@ -89,8 +89,8 @@
                   :class="[
                     'badge',
                     meter.status === 'online'
-                      ? 'bg-success'
-                      : 'bg-danger'
+                      ? 'text-bg-success'
+                      : 'text-bg-danger'
                   ]"
                 >
                   {{ meter.status }}
@@ -296,7 +296,7 @@
                 <label class="form-label">Pilih File CSV</label>
                 <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
               </div>
-              <a href="/api/import/template?type=meters" class="text-decoration-none small" target="_blank">Download Template</a>
+              <button type="button" class="btn btn-link p-0 text-decoration-none small" @click="downloadTemplate">Download Template</button>
               <div v-if="importResult" :class="['alert mt-3', importResult.success !== false ? 'alert-success' : 'alert-danger']">
                 {{ importResult.message || JSON.stringify(importResult) }}
               </div>
@@ -476,13 +476,39 @@ function goToPage(page) {
   fetchData(page)
 }
 
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  try {
+    const { data, headers } = await api.get('/export/meters', { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'kwh_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh data') }
+}
+
+async function downloadTemplate() {
+  try {
+    const { data, headers } = await api.get('/import/template', { params: { type: 'kwh_meters' }, responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'template_kwh_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh template') }
+}
+
 async function handleImport() {
   if (!importFile.value) return
   importing.value = true; importResult.value = null
   try {
     const fd = new FormData()
     fd.append('file', importFile.value)
-    fd.append('type', 'meters')
+    fd.append('type', 'kwh_meters')
     const { data: res } = await api.post('/import', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
     importResult.value = res; importFile.value = null; fetchData()
   } catch (e) {

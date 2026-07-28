@@ -6,7 +6,7 @@
         <p class="text-muted">Kelola data jenis/tipe KWH meter</p>
       </div>
       <div class="d-flex gap-2">
-        <a href="/api/export/jenis-kwh-meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="handleExport" class="btn btn-outline-secondary">Ekspor CSV</button>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
         <button @click="openForm()" class="btn btn-primary">
           + Tambah Jenis Meter
@@ -222,7 +222,7 @@
                 <label class="form-label">Pilih File CSV</label>
                 <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
               </div>
-              <a href="/api/import/template?type=jenis_kwh_meters" class="text-decoration-none small" target="_blank">Download Template</a>
+              <button type="button" class="btn btn-link p-0 text-decoration-none small" @click="downloadTemplate">Download Template</button>
               <div v-if="importResult" :class="['alert mt-3', importResult.success !== false ? 'alert-success' : 'alert-danger']">
                 {{ importResult.message || JSON.stringify(importResult) }}
               </div>
@@ -421,6 +421,32 @@ async function confirmDelete(item) {
   })
   if (!ok) return
   try { await api.delete(`/jenis-kwh-meters/${item.id}`); await fetchData() } catch (e) { console.error(e) }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  try {
+    const { data, headers } = await api.get('/export/jenis-kwh-meters', { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'jenis_kwh_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh data') }
+}
+
+async function downloadTemplate() {
+  try {
+    const { data, headers } = await api.get('/import/template', { params: { type: 'jenis_kwh_meters' }, responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'template_jenis_kwh_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh template') }
 }
 
 async function handleImport() {

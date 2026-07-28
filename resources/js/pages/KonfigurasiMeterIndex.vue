@@ -6,7 +6,7 @@
         <p class="text-muted">Mapping titik ukur dengan jenis KWH meter dan periode</p>
       </div>
       <div class="d-flex gap-2">
-        <a href="/api/export/konfigurasi-meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="handleExport" class="btn btn-outline-secondary">Ekspor CSV</button>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
         <button @click="openForm()" class="btn btn-primary">
           + Tambah Konfigurasi
@@ -70,9 +70,9 @@
                 </span>
               </td>
               <td class="text-center">
-                <a v-if="k.document_path" :href="getDocumentUrl(k)" target="_blank" class="badge text-bg-blue">
+                <button v-if="k.document_path" @click="downloadDocument(k)" class="btn btn-sm btn-link p-0 badge text-bg-blue">
                   PDF
-                </a>
+                </button>
                 <span v-else class="text-muted small">-</span>
               </td>
               <td class="text-center">
@@ -273,7 +273,7 @@
                 <label class="form-label">Pilih File CSV</label>
                 <input type="file" accept=".csv,.txt" class="form-control" @change="importFile = $event.target.files[0]" />
               </div>
-              <a href="/api/import/template?type=konfigurasi_meters" class="text-decoration-none small" target="_blank">Download Template</a>
+              <button type="button" class="btn btn-link p-0 text-decoration-none small" @click="downloadTemplate">Download Template</button>
               <div v-if="importResult" :class="['alert mt-3', importResult.success !== false ? 'alert-success' : 'alert-danger']">
                 {{ importResult.message || JSON.stringify(importResult) }}
               </div>
@@ -565,6 +565,41 @@ function formatFileSize(bytes) {
 function getDocumentUrl(item) {
   const token = localStorage.getItem('token')
   return `/api/konfigurasi-meters/${item.id}/document?token=${token}`
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click()
+  document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
+async function handleExport() {
+  try {
+    const { data, headers } = await api.get('/export/konfigurasi-meters', { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'konfigurasi_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh data') }
+}
+
+async function downloadTemplate() {
+  try {
+    const { data, headers } = await api.get('/import/template', { params: { type: 'konfigurasi_meters' }, responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || 'template_konfigurasi_meters.csv'
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh template') }
+}
+
+async function downloadDocument(item) {
+  try {
+    const { data, headers } = await api.get(`/konfigurasi-meters/${item.id}/document`, { responseType: 'blob' })
+    const cd = headers['content-disposition'] || ''
+    const fn = cd.match(/filename="?(.+?)"?$/)?.[1] || `document_${item.id}.pdf`
+    downloadBlob(data, fn)
+  } catch (e) { alert('Gagal mengunduh dokumen') }
 }
 
 async function handleImport() {
