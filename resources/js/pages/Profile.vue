@@ -1,5 +1,5 @@
 <template>
-  <div class="page-wrapper">
+  <div>
     <div class="page-body">
       <div class="container-xl" style="max-width: 720px;">
         <div class="page-pretitle">Akun</div>

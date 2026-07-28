@@ -8,3 +8,7 @@
 body {
     font-family: var(--tblr-font-sans-serif);
 }
+
+.page-wrapper {
+    overflow-x: hidden;
+}

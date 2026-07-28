@@ -1,19 +1,17 @@
 <template>
-  <div class="d-flex flex-column gap-4">
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3">
+  <div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-1">Jenis KWH Meter</h1>
-        <p class="text-muted small mb-0">Kelola data jenis/tipe KWH meter</p>
+        <h2 class="page-title">Jenis KWH Meter</h2>
+        <p class="text-muted">Kelola data jenis/tipe KWH meter</p>
       </div>
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex gap-2">
         <a href="/api/export/jenis-kwh-meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
         <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
-        <button @click="openForm()" class="btn btn-primary d-inline-flex align-items-center gap-2">
-          <span>+</span>
-          Tambah Jenis Meter
+        <button @click="openForm()" class="btn btn-primary">
+          + Tambah Jenis Meter
         </button>
-        <button @click="toggleTrashed" :class="['btn d-inline-flex align-items-center gap-2', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
-          <span>{{ showTrashed ? '←' : '⚠' }}</span>
+        <button @click="toggleTrashed" :class="['btn', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
       </div>

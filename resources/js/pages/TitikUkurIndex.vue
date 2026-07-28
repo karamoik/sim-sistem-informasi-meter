@@ -1,11 +1,11 @@
 <template>
-  <div class="page-wrapper">
-    <div class="page-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
+  <div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-1">Titik Ukur</h1>
-        <p class="text-muted small">Kelola data titik pengukuran</p>
+        <h2 class="page-title">Titik Ukur</h2>
+        <p class="text-muted">Kelola data titik pengukuran</p>
       </div>
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex gap-2">
         <button @click="openForm()" class="btn btn-primary">
           + Tambah Titik Ukur
         </button>

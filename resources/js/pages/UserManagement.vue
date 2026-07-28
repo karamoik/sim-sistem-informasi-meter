@@ -1,16 +1,14 @@
 <template>
-  <div class="page-wrapper">
+  <div>
     <!-- Header -->
-    <div class="page-header d-print-none mb-4">
-      <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
-        <div>
-          <h1 class="page-title mb-1">Manajemen User</h1>
-          <p class="text-secondary">Kelola user dan akses unit gardu induk</p>
-        </div>
-        <button @click="openForm()" class="btn btn-primary">
-          + Tambah User
-        </button>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+      <div>
+        <h2 class="page-title">Manajemen User</h2>
+        <p class="text-muted">Kelola user dan akses unit gardu induk</p>
       </div>
+      <button @click="openForm()" class="btn btn-primary">
+        + Tambah User
+      </button>
     </div>
 
     <!-- Search & Filters -->

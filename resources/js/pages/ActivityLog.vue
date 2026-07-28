@@ -1,21 +1,17 @@
 <template>
-  <div class="page-wrapper">
-    <div class="page-header d-print-none mb-4">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <div class="page-pretitle">Aktivitas</div>
-          <h2 class="page-title">Riwayat Aktivitas</h2>
-          <p class="text-muted small">Catatan semua aktivitas akun anda</p>
-        </div>
-        <div class="col-auto ms-auto">
-          <div class="d-flex gap-3 align-items-center">
-            <select v-model="filterType" class="form-select form-select-sm">
-              <option value="">Semua Tipe</option>
-              <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
-            </select>
-            <button v-if="logs.length" @click="confirmClear" class="btn btn-outline-danger btn-sm">Hapus Semua</button>
-          </div>
-        </div>
+  <div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+      <div>
+        <div class="page-pretitle">Aktivitas</div>
+        <h2 class="page-title">Riwayat Aktivitas</h2>
+        <p class="text-muted small">Catatan semua aktivitas akun anda</p>
+      </div>
+      <div class="d-flex gap-3 align-items-center">
+        <select v-model="filterType" class="form-select form-select-sm">
+          <option value="">Semua Tipe</option>
+          <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+        </select>
+        <button v-if="logs.length" @click="confirmClear" class="btn btn-outline-danger btn-sm">Hapus Semua</button>
       </div>
     </div>
 

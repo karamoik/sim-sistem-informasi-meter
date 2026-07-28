@@ -1,9 +1,11 @@
 <template>
-  <div class="page-wrapper">
-    <div class="page-header d-print-none mb-3">
-      <div class="page-pretitle">Settings</div>
-      <h2 class="page-title">Pengaturan Notifikasi</h2>
-      <p class="text-secondary">Atur notifikasi yang ingin anda terima</p>
+  <div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-3">
+      <div>
+        <div class="page-pretitle">Settings</div>
+        <h2 class="page-title">Pengaturan Notifikasi</h2>
+        <p class="text-secondary">Atur notifikasi yang ingin anda terima</p>
+      </div>
     </div>
 
     <div class="card">

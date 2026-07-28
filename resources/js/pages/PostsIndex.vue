@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-0">Posts</h1>
-        <p class="text-secondary small mb-0">Manage your content here</p>
+        <h2 class="page-title">Posts</h2>
+        <p class="text-muted">Manage your content here</p>
       </div>
       <router-link
         to="/posts/create"
-        class="btn btn-primary d-inline-flex align-items-center gap-2"
+        class="btn btn-primary"
       >
         + New Post
       </router-link>

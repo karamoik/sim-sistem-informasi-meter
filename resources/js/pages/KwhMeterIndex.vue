@@ -1,27 +1,23 @@
 <template>
-  <div class="page-wrapper">
+  <div>
     <!-- Header -->
-    <div class="page-header d-print-none mb-4">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <h2 class="page-title">KWH Meter</h2>
-          <p class="text-muted">Kelola data KWH meter</p>
-        </div>
-        <div class="col-auto ms-auto">
-          <div class="d-flex gap-2">
-            <button
-              @click="openForm()"
-              class="btn btn-primary"
-            >
-              + Tambah Meter
-            </button>
-            <a href="/api/export/meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
-            <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
-            <button @click="toggleTrashed" :class="['btn', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
-              {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
-            </button>
-          </div>
-        </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+      <div>
+        <h2 class="page-title">KWH Meter</h2>
+        <p class="text-muted">Kelola data KWH meter</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button
+          @click="openForm()"
+          class="btn btn-primary"
+        >
+          + Tambah Meter
+        </button>
+        <a href="/api/export/meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
+        <button @click="showImport = true" class="btn btn-outline-secondary">Impor CSV</button>
+        <button @click="toggleTrashed" :class="['btn', showTrashed ? 'btn-warning' : 'btn-outline-secondary']">
+          {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
+        </button>
       </div>
     </div>
 

@@ -1,7 +1,7 @@
 <template>
-  <div class="page-wrapper">
+  <div>
     <!-- Header -->
-    <div class="page-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
         <h1 class="page-title mb-1">Linked Devices</h1>
         <p class="text-muted small">Kelola semua device yang terhubung ke akun anda</p>

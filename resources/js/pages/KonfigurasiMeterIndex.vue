@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-1">Konfigurasi Meter</h1>
-        <p class="text-muted small mt-1">Mapping titik ukur dengan jenis KWH meter dan periode</p>
+        <h2 class="page-title">Konfigurasi Meter</h2>
+        <p class="text-muted">Mapping titik ukur dengan jenis KWH meter dan periode</p>
       </div>
       <div class="d-flex gap-2">
         <a href="/api/export/konfigurasi-meters" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>

@@ -1,19 +1,19 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-1">Gardu Induk</h1>
-        <p class="text-muted small">Kelola data gardu induk</p>
+        <h2 class="page-title mb-1">Gardu Induk</h2>
+        <p class="text-muted mb-0">Kelola data gardu induk</p>
       </div>
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex gap-2">
         <button
           @click="openForm()"
-          class="btn btn-primary d-inline-flex align-items-center gap-2"
+          class="btn btn-primary"
         >
           + Tambah Gardu Induk
         </button>
-        <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning d-inline-flex align-items-center gap-2' : 'btn btn-outline-secondary d-inline-flex align-items-center gap-2'">
+        <button @click="toggleTrashed" :class="showTrashed ? 'btn btn-warning' : 'btn btn-outline-secondary'">
           {{ showTrashed ? 'Kembali' : 'Data Terhapus' }}
         </button>
         <a :href="'/api/export/gardu-induks'" class="btn btn-outline-secondary" target="_blank">Ekspor CSV</a>
