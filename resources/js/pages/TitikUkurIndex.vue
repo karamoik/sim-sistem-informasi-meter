@@ -55,10 +55,10 @@
               <td>{{ tu.gardu_induk?.name }}</td>
               <td class="small text-truncate" style="max-width:200px;">{{ tu.address || '-' }}</td>
               <td class="text-center">
-                <span class="badge bg-secondary">{{ tu.konfigurasi_meters_count }}</span>
+                <span class="badge text-bg-secondary">{{ tu.konfigurasi_meters_count }}</span>
               </td>
               <td class="text-center">
-                <span :class="tu.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'">
+                <span :class="tu.status === 'active' ? 'badge text-bg-success' : 'badge text-bg-secondary'">
                   {{ tu.status }}
                 </span>
               </td>
@@ -113,7 +113,7 @@
               <td class="fw-medium">{{ tu.name }}</td>
               <td>{{ tu.gardu_induk?.name }}</td>
               <td class="text-center">
-                <span :class="tu.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'">
+                <span :class="tu.status === 'active' ? 'badge text-bg-success' : 'badge text-bg-secondary'">
                   {{ tu.status }}
                 </span>
               </td>
@@ -336,6 +336,7 @@ async function fetchData(page = 1) {
     pagination.value = {
       current_page: res.data.current_page,
       last_page: res.data.last_page,
+      per_page: res.data.per_page,
       from: res.data.from, to: res.data.to, total: res.data.total,
     }
   } catch (e) { console.error(e) }

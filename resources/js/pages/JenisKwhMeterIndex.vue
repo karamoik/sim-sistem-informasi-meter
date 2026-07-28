@@ -52,7 +52,7 @@
                 <div v-if="j.description" class="text-muted small text-truncate" style="max-width: 200px;">{{ j.description }}</div>
               </td>
               <td class="text-center">
-                <span :class="['badge', j.phase === 'single' ? 'bg-blue' : 'bg-purple']">
+                <span :class="['badge', j.phase === 'single' ? 'text-bg-blue' : 'text-bg-purple']">
                   {{ j.phase === 'single' ? '1 Phase' : '3 Phase' }}
                 </span>
               </td>
@@ -107,7 +107,7 @@
               <td class="font-monospace fw-semibold">{{ j.code }}</td>
               <td class="fw-medium">{{ j.name }}</td>
               <td class="text-center">
-                <span :class="['badge', j.phase === 'single' ? 'bg-blue' : 'bg-purple']">
+                <span :class="['badge', j.phase === 'single' ? 'text-bg-blue' : 'text-bg-purple']">
                   {{ j.phase === 'single' ? '1 Phase' : '3 Phase' }}
                 </span>
               </td>
@@ -322,6 +322,7 @@ async function fetchData(page = 1) {
     pagination.value = {
       current_page: res.data.current_page,
       last_page: res.data.last_page,
+      per_page: res.data.per_page,
       from: res.data.from, to: res.data.to, total: res.data.total,
     }
   } catch (e) { console.error(e) }

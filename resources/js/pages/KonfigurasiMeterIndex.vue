@@ -58,7 +58,7 @@
                 <p class="text-muted small">{{ k.jenis_kwh_meter?.phase === 'single' ? '1 Phase' : '3 Phase' }} {{ k.jenis_kwh_meter?.max_capacity ? '- ' + Number(k.jenis_kwh_meter.max_capacity).toLocaleString('id-ID') + ' VA' : '' }}</p>
               </td>
               <td class="text-center">
-                <span class="badge bg-secondary">{{ k.period }}</span>
+                <span class="badge text-bg-secondary">{{ k.period }}</span>
               </td>
               <td class="text-center">
                 <div>{{ formatDate(k.start_date) }}</div>
@@ -70,7 +70,7 @@
                 </span>
               </td>
               <td class="text-center">
-                <a v-if="k.document_path" :href="getDocumentUrl(k)" target="_blank" class="badge bg-blue">
+                <a v-if="k.document_path" :href="getDocumentUrl(k)" target="_blank" class="badge text-bg-blue">
                   PDF
                 </a>
                 <span v-else class="text-muted small">-</span>
@@ -388,6 +388,7 @@ async function fetchData(page = 1) {
     pagination.value = {
       current_page: res.data.current_page,
       last_page: res.data.last_page,
+      per_page: res.data.per_page,
       from: res.data.from, to: res.data.to, total: res.data.total,
     }
   } catch (e) { console.error(e) }
@@ -446,7 +447,7 @@ function formatDateTime(d) {
 }
 
 function statusClass(s) {
-  return { active: 'bg-success', inactive: 'bg-secondary', expired: 'bg-danger' }[s] || ''
+  return { active: 'text-bg-success', inactive: 'text-bg-secondary', expired: 'text-bg-danger' }[s] || ''
 }
 
 function statusDotClass(s) {

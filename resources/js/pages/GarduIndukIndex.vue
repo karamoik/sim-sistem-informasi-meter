@@ -72,14 +72,14 @@
               <td>{{ gi.region }}</td>
               <td class="text-center fw-medium">{{ gi.meters_count }}</td>
               <td class="text-center">
-                <span class="badge bg-blue">{{ gi.online_count }}</span>
+                <span class="badge text-bg-blue">{{ gi.online_count }}</span>
               </td>
               <td class="text-center">
                 <span :class="gi.offline_count > 0 ? 'badge bg-red' : 'text-muted'">{{ gi.offline_count }}</span>
               </td>
               <td class="text-center">
                 <span
-                  :class="gi.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'"
+                  :class="gi.status === 'active' ? 'badge text-bg-success' : 'badge text-bg-secondary'"
                 >
                   {{ gi.status }}
                 </span>
@@ -148,7 +148,7 @@
               <td class="fw-medium">{{ gi.name }}</td>
               <td>{{ gi.region }}</td>
               <td class="text-center">
-                <span :class="gi.status === 'active' ? 'badge bg-success' : 'badge bg-secondary'">
+                <span :class="gi.status === 'active' ? 'badge text-bg-success' : 'badge text-bg-secondary'">
                   {{ gi.status }}
                 </span>
               </td>
@@ -405,6 +405,7 @@ async function fetchData(page = 1) {
     pagination.value = {
       current_page: res.data.current_page,
       last_page: res.data.last_page,
+      per_page: res.data.per_page,
       from: res.data.from,
       to: res.data.to,
       total: res.data.total,

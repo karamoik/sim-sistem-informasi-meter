@@ -178,7 +178,7 @@
               <td>{{ m.unit_name }}</td>
               <td class="text-muted">{{ m.gardu_induk?.name }}</td>
               <td class="text-center">
-                <span :class="['badge', m.status === 'online' ? 'bg-success' : 'bg-danger']">
+                <span :class="['badge', m.status === 'online' ? 'text-bg-success' : 'text-bg-danger']">
                   {{ m.status }}
                 </span>
               </td>
@@ -420,6 +420,7 @@ async function fetchData(page = 1) {
     pagination.value = {
       current_page: res.data.current_page,
       last_page: res.data.last_page,
+      per_page: res.data.per_page,
       from: res.data.from,
       to: res.data.to,
       total: res.data.total,
