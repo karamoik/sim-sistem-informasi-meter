@@ -1,40 +1,43 @@
 <template>
-  <div class="relative" ref="containerRef">
+  <div ref="containerRef" class="position-relative">
     <div
       @click="toggle"
-      class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+      class="form-control d-flex align-items-center justify-content-between cursor-pointer"
+      :class="open ? 'border-primary' : ''"
+      style="min-height: 38px;"
     >
-      <span :class="modelValue ? '' : 'text-gray-400 dark:text-gray-500'">
+      <span :class="modelValue ? '' : 'text-secondary'">
         {{ modelValue || placeholder }}
       </span>
-      <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-down" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotate-180': open }" style="transition: transform .2s; flex-shrink: 0;">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M6 9l6 6l6 -6" />
       </svg>
     </div>
-    <div v-if="open" class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden">
+    <div v-if="open" class="position-absolute top-100 start-0 w-100 mt-1 bg-body border rounded shadow-lg" style="z-index: 1050;">
       <div class="p-2">
         <input
           ref="searchInput"
           v-model="query"
           type="text"
           placeholder="Cari..."
-          class="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="form-control form-control-sm"
           @keydown.esc="close"
         />
       </div>
-      <ul class="max-h-48 overflow-y-auto pb-1">
+      <ul class="list-unstyled mb-0" style="max-height: 12rem; overflow-y: auto;">
         <li
           v-for="option in filtered"
           :key="option"
           @click="select(option)"
-          class="px-3 py-2 text-sm cursor-pointer transition-colors"
+          class="px-3 py-2 cursor-pointer"
           :class="option === modelValue
-            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            ? 'bg-primary bg-opacity-10 text-primary fw-medium'
+            : 'hover-bg'"
         >
           {{ option }}
         </li>
-        <li v-if="filtered.length === 0" class="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">
+        <li v-if="filtered.length === 0" class="px-3 py-2 text-secondary small">
           Tidak ditemukan
         </li>
       </ul>
@@ -43,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -90,3 +93,9 @@ function onClickOutside(e) {
 onMounted(() => document.addEventListener('click', onClickOutside))
 onBeforeUnmount(() => document.removeEventListener('click', onClickOutside))
 </script>
+
+<style scoped>
+.cursor-pointer { cursor: pointer; }
+.rotate-180 { transform: rotate(180deg); }
+.hover-bg:hover { background-color: var(--bs-dropdown-link-hover-bg, rgba(0,0,0,.04)); }
+</style>

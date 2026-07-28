@@ -1,8 +1,10 @@
 <template>
-  <div class="absolute -top-1 -right-1 z-10">
-    <div class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold shadow-sm whitespace-nowrap">
-      <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/>
+  <div class="position-absolute top-0 end-0" style="z-index: 10; transform: translate(25%, -50%);">
+    <div class="d-flex align-items-center gap-1 px-2 py-05 rounded-pill bg-warning text-white fw-bold shadow-sm small" style="font-size: .6rem; white-space: nowrap; line-height: 1.4;">
+      <svg width="10" height="10" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5 -5.5Z" />
+        <path d="M15 5l4 4" />
       </svg>
       {{ editors.join(', ') }}
     </div>

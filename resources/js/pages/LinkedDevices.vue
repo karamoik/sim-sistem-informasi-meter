@@ -125,7 +125,7 @@
       <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <div v-if="showConfirm" class="fixed inset-0 z-[10000] d-flex align-items-start align-items-sm-center justify-content-center p-4 pt-20">
           <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50" @click="showConfirm = false"></div>
-          <div class="position-relative bg-white rounded shadow-lg max-w-md w-full p-4" style="max-width: 28rem;">
+          <div class="position-relative bg-body rounded shadow-lg p-4" style="max-width: 28rem; width: 100%;">
             <div class="d-flex align-items-center gap-3 mb-3">
               <div class="d-flex align-items-center justify-content-center rounded-circle bg-danger-lt" style="width: 2.5rem; height: 2.5rem;">
                 <span class="text-danger fw-bold">!</span>

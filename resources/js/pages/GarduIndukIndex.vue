@@ -50,6 +50,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Kode</th>
               <th>Nama</th>
               <th>Region</th>
@@ -62,9 +63,10 @@
           </thead>
           <tbody>
             <tr
-              v-for="gi in garduInduks"
+              v-for="(gi, idx) in garduInduks"
               :key="gi.id"
             >
+              <td class="text-muted">{{ (pagination.current_page - 1) * pagination.per_page + idx + 1 }}</td>
               <td class="font-monospace fw-semibold">{{ gi.code }}</td>
               <td class="fw-medium">{{ gi.name }}</td>
               <td>{{ gi.region }}</td>
@@ -102,7 +104,7 @@
               </td>
             </tr>
             <tr v-if="!garduInduks.length">
-              <td colspan="8" class="text-center text-muted py-4">
+              <td colspan="9" class="text-center text-muted py-4">
                 Tidak ada data gardu induk
               </td>
             </tr>
@@ -130,6 +132,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Kode</th>
               <th>Nama</th>
               <th>Region</th>
@@ -139,7 +142,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="gi in trashedList" :key="gi.id" class="opacity-75">
+            <tr v-for="(gi, idx) in trashedList" :key="gi.id" class="opacity-75">
+              <td class="text-muted">{{ idx + 1 }}</td>
               <td class="font-monospace fw-semibold">{{ gi.code }}</td>
               <td class="fw-medium">{{ gi.name }}</td>
               <td>{{ gi.region }}</td>
@@ -161,7 +165,7 @@
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>

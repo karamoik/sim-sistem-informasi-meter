@@ -37,6 +37,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Kode</th>
               <th>Nama</th>
               <th>Gardu Induk</th>
@@ -47,7 +48,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="tu in titikUkurs" :key="tu.id">
+            <tr v-for="(tu, idx) in titikUkurs" :key="tu.id">
+              <td class="text-muted">{{ (pagination.current_page - 1) * pagination.per_page + idx + 1 }}</td>
               <td class="font-monospace fw-semibold small">{{ tu.code }}</td>
               <td class="fw-medium">{{ tu.name }}</td>
               <td>{{ tu.gardu_induk?.name }}</td>
@@ -72,7 +74,7 @@
               </td>
             </tr>
             <tr v-if="!titikUkurs.length">
-              <td colspan="7" class="text-center text-muted py-4">Tidak ada data titik ukur</td>
+              <td colspan="8" class="text-center text-muted py-4">Tidak ada data titik ukur</td>
             </tr>
           </tbody>
         </table>
@@ -95,6 +97,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Kode</th>
               <th>Nama</th>
               <th>Gardu Induk</th>
@@ -104,7 +107,8 @@
             </tr>
           </thead>
           <tbody class="opacity-75">
-            <tr v-for="tu in trashedList" :key="tu.id">
+            <tr v-for="(tu, idx) in trashedList" :key="tu.id">
+              <td class="text-muted">{{ idx + 1 }}</td>
               <td class="font-monospace fw-semibold small">{{ tu.code }}</td>
               <td class="fw-medium">{{ tu.name }}</td>
               <td>{{ tu.gardu_induk?.name }}</td>
@@ -126,7 +130,7 @@
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>
@@ -318,7 +322,7 @@ watch(otherFieldChanges, () => {
 })
 
 async function fetchGarduInduks() {
-  try { const { data: res } = await api.get('/gardu-induks'); allGarduInduks.value = res.data } catch (e) { console.error(e) }
+  try { const { data: res } = await api.get('/gardu-induks/all'); allGarduInduks.value = res.data } catch (e) { console.error(e) }
 }
 
 async function fetchData(page = 1) {
@@ -355,7 +359,7 @@ async function handleImport() {
 async function fetchTrashed() {
   try {
     const { data: res } = await api.get('/titik-ukurs/trashed')
-    trashedList.value = res.data
+    trashedList.value = res.data.data
   } catch (e) { console.error(e) }
 }
 

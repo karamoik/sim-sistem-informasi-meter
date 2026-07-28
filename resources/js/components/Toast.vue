@@ -8,14 +8,19 @@
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 translate-y-4"
     >
-      <div v-if="show" :class="['fixed bottom-6 right-6 z-[10001] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium', typeClasses]">
-        <svg v-if="type === 'success'" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <svg v-else class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-        </svg>
-        {{ message }}
+      <div v-if="show" class="position-fixed bottom-0 end-0 p-3" style="z-index: 10001;">
+        <div :class="['d-flex align-items-center gap-3 px-4 py-3 rounded-3 shadow-lg small fw-medium', typeClasses]">
+          <svg v-if="type === 'success'" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M5 12l5 5l10 -10" />
+          </svg>
+          <svg v-else class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <path d="M12 9v4" /><path d="M10.91 17.9l-.062 .032a1 1 0 0 0 .555 .866l.392 .16c.368 .146 .753 .208 1.138 .182a2 2 0 0 0 1.263 -.606l.2 -.286" />
+            <path d="M12 9v-4" /><circle cx="12" cy="17" r="1" fill="currentColor" />
+          </svg>
+          {{ message }}
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -30,8 +35,8 @@ const type = ref('success')
 
 const typeClasses = computed(() =>
   type.value === 'success'
-    ? 'bg-green-600 text-white'
-    : 'bg-red-600 text-white'
+    ? 'bg-success text-white'
+    : 'bg-danger text-white'
 )
 
 function toast(msg, toastType = 'success') {

@@ -61,6 +61,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Nomor Meter</th>
               <th>Unit</th>
               <th>Lokasi</th>
@@ -73,9 +74,10 @@
           </thead>
           <tbody>
             <tr
-              v-for="meter in meters"
+              v-for="(meter, idx) in meters"
               :key="meter.id"
             >
+              <td class="text-muted">{{ (pagination.current_page - 1) * pagination.per_page + idx + 1 }}</td>
               <td class="font-monospace fw-bold">{{ meter.meter_no }}</td>
               <td>{{ meter.unit_name }}</td>
               <td class="text-muted" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ meter.location }}</td>
@@ -126,7 +128,7 @@
               </td>
             </tr>
             <tr v-if="!meters.length">
-              <td colspan="8" class="text-center text-muted py-4">
+              <td colspan="9" class="text-center text-muted py-4">
                 Tidak ada data meter
               </td>
             </tr>
@@ -160,6 +162,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Nomor Meter</th>
               <th>Unit</th>
               <th>Gardu Induk</th>
@@ -169,7 +172,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="m in trashedList" :key="m.id" class="opacity-75">
+            <tr v-for="(m, idx) in trashedList" :key="m.id" class="opacity-75">
+              <td class="text-muted">{{ idx + 1 }}</td>
               <td class="font-monospace fw-bold">{{ m.meter_no }}</td>
               <td>{{ m.unit_name }}</td>
               <td class="text-muted">{{ m.gardu_induk?.name }}</td>
@@ -187,7 +191,7 @@
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>
@@ -398,7 +402,7 @@ function debouncedFetch() {
 
 async function fetchGarduInduks() {
   try {
-    const { data: res } = await api.get('/gardu-induks')
+    const { data: res } = await api.get('/gardu-induks/all')
     allGarduInduks.value = res.data
   } catch (e) {
     console.error('Failed to fetch gardu induks', e)

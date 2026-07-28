@@ -33,6 +33,7 @@
         <table class="table table-hover table-striped table-vcenter mb-0">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th class="text-start">Kode</th>
               <th class="text-start">Nama</th>
               <th class="text-center">Phase</th>
@@ -43,7 +44,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="j in jenisList" :key="j.id">
+            <tr v-for="(j, idx) in jenisList" :key="j.id">
+              <td class="text-muted">{{ (pagination.current_page - 1) * pagination.per_page + idx + 1 }}</td>
               <td class="font-monospace fw-semibold">{{ j.code }}</td>
               <td>
                 <div class="fw-medium">{{ j.name }}</div>
@@ -57,7 +59,7 @@
               <td class="text-end font-monospace small">{{ j.max_capacity ? Number(j.max_capacity).toLocaleString('id-ID') : '-' }}</td>
               <td class="text-muted small">{{ j.manufacturer || '-' }}</td>
               <td class="text-center">
-                <span class="avatar avatar-sm rounded-circle bg-gray text-dark">{{ j.kwh_meters_count }}</span>
+                <span class="avatar avatar-sm rounded-circle bg-secondary bg-opacity-10 text-dark">{{ j.kwh_meters_count }}</span>
               </td>
               <td class="text-center">
                 <div class="d-flex align-items-center justify-content-center gap-2">
@@ -67,7 +69,7 @@
               </td>
             </tr>
             <tr v-if="!jenisList.length">
-              <td colspan="7" class="text-center text-muted py-4">Tidak ada data jenis KWH meter</td>
+              <td colspan="8" class="text-center text-muted py-4">Tidak ada data jenis KWH meter</td>
             </tr>
           </tbody>
         </table>
@@ -90,6 +92,7 @@
         <table class="table table-hover table-striped table-vcenter mb-0">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th class="text-start">Kode</th>
               <th class="text-start">Nama</th>
               <th class="text-center">Phase</th>
@@ -99,7 +102,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="j in trashedList" :key="j.id" class="opacity-50">
+            <tr v-for="(j, idx) in trashedList" :key="j.id" class="opacity-50">
+              <td class="text-muted">{{ idx + 1 }}</td>
               <td class="font-monospace fw-semibold">{{ j.code }}</td>
               <td class="fw-medium">{{ j.name }}</td>
               <td class="text-center">
@@ -108,7 +112,7 @@
                 </span>
               </td>
               <td class="text-center">
-                <span class="avatar avatar-sm rounded-circle bg-gray text-dark">{{ j.kwh_meters_count }}</span>
+                <span class="avatar avatar-sm rounded-circle bg-secondary bg-opacity-10 text-dark">{{ j.kwh_meters_count }}</span>
               </td>
               <td class="text-center small text-muted">{{ formatDateTime(j.deleted_at) }}</td>
               <td class="text-center">
@@ -119,7 +123,7 @@
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>

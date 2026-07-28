@@ -34,6 +34,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Titik Ukur</th>
               <th>Gardu Induk</th>
               <th>Jenis Meter</th>
@@ -45,7 +46,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="k in konfigurasiList" :key="k.id">
+            <tr v-for="(k, idx) in konfigurasiList" :key="k.id">
+              <td class="text-muted">{{ (pagination.current_page - 1) * pagination.per_page + idx + 1 }}</td>
               <td>
                 <p class="fw-bold">{{ k.titik_ukur?.name }}</p>
                 <p class="text-muted small font-monospace">{{ k.titik_ukur?.code }}</p>
@@ -56,7 +58,7 @@
                 <p class="text-muted small">{{ k.jenis_kwh_meter?.phase === 'single' ? '1 Phase' : '3 Phase' }} {{ k.jenis_kwh_meter?.max_capacity ? '- ' + Number(k.jenis_kwh_meter.max_capacity).toLocaleString('id-ID') + ' VA' : '' }}</p>
               </td>
               <td class="text-center">
-                <span class="badge bg-gray">{{ k.period }}</span>
+                <span class="badge bg-secondary">{{ k.period }}</span>
               </td>
               <td class="text-center">
                 <div>{{ formatDate(k.start_date) }}</div>
@@ -85,7 +87,7 @@
               </td>
             </tr>
             <tr v-if="!konfigurasiList.length">
-              <td colspan="8" class="text-center text-muted py-4">Tidak ada data konfigurasi meter</td>
+              <td colspan="9" class="text-center text-muted py-4">Tidak ada data konfigurasi meter</td>
             </tr>
           </tbody>
         </table>
@@ -108,6 +110,7 @@
         <table class="table table-hover table-striped table-vcenter">
           <thead>
             <tr>
+              <th style="width:50px">No</th>
               <th>Periode</th>
               <th>Titik Ukur</th>
               <th>Jenis Meter</th>
@@ -117,7 +120,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="k in trashedList" :key="k.id" class="opacity-75">
+            <tr v-for="(k, idx) in trashedList" :key="k.id" class="opacity-75">
+              <td class="text-muted">{{ idx + 1 }}</td>
               <td class="fw-bold">{{ k.period }}</td>
               <td>{{ k.titik_ukur?.name }}</td>
               <td>{{ k.jenis_kwh_meter?.name }}</td>
@@ -139,7 +143,7 @@
               </td>
             </tr>
             <tr v-if="!trashedList.length">
-              <td colspan="6" class="text-center text-muted py-4">Tidak ada data terhapus</td>
+              <td colspan="7" class="text-center text-muted py-4">Tidak ada data terhapus</td>
             </tr>
           </tbody>
         </table>
@@ -366,7 +370,7 @@ watch(otherFieldChanges, () => {
 
 async function fetchRefs() {
   try {
-    const [tu, jm] = await Promise.all([api.get('/titik-ukurs'), api.get('/jenis-kwh-meters')])
+    const [tu, jm] = await Promise.all([api.get('/titik-ukurs/all'), api.get('/jenis-kwh-meters/all')])
     allTitikUkurs.value = tu.data.data || tu.data
     allJenisMeters.value = jm.data.data || jm.data
   } catch (e) { console.error(e) }
