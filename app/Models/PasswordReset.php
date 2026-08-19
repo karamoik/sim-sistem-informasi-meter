@@ -10,5 +10,12 @@ class PasswordReset extends Model
 
     protected $table = 'password_resets';
 
-    protected $fillable = ['email', 'token'];
+    protected $fillable = ['email', 'token', 'created_at'];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+        ];
+    }
 }

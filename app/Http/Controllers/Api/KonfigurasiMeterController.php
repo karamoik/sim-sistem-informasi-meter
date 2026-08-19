@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class KonfigurasiMeterController extends BaseApiController
 {
@@ -192,7 +192,7 @@ class KonfigurasiMeterController extends BaseApiController
         }
 
         try {
-            JWTAuth::parseToken()->authenticate($token);
+            JWTAuth::setToken($token)->authenticate();
         } catch (\Exception $e) {
             return $this->error('Unauthorized', null, 401);
         }

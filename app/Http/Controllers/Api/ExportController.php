@@ -9,8 +9,8 @@ use App\Models\KonfigurasiMeter;
 use App\Models\TitikUkur;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\StreamedResponse;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportController extends BaseApiController
 {
@@ -84,7 +84,7 @@ class ExportController extends BaseApiController
     {
         $user = $request->user();
 
-        $garduInduks = GarduInduk::withCount(['kwhMeters', 'kwhMeters as online_count' => function ($q) {
+        $garduInduks = GarduInduk::withCount(['meters', 'meters as online_count' => function ($q) {
             $q->where('status', 'online');
         }])->get();
 
@@ -337,17 +337,24 @@ class ExportController extends BaseApiController
 
         $file = $request->file('file');
         $type = $request->input('type');
-        $handle = fopen($file->getRealPath(), 'r');
 
-        if (!$handle) {
+        $lines = file($file->getRealPath());
+        if ($lines === false || empty($lines)) {
             return $this->error('Gagal membaca file CSV');
         }
 
-        $header = fgetcsv($handle);
+        while (str_starts_with($lines[0], "\xEF\xBB\xBF")) {
+            $lines[0] = substr($lines[0], 3);
+        }
+
+        $delimiter = substr_count($lines[0], ';') > substr_count($lines[0], ',') ? ';' : ',';
+
+        $header = str_getcsv($lines[0], $delimiter);
         if (!$header) {
-            fclose($handle);
             return $this->error('File CSV kosong atau format tidak valid');
         }
+
+        $header = array_map(fn ($h) => $this->normalizeHeader($h), $header);
 
         $imported = 0;
         $failed = 0;
@@ -357,8 +364,14 @@ class ExportController extends BaseApiController
         DB::beginTransaction();
 
         try {
-            while (($row = fgetcsv($handle)) !== false) {
+            foreach (array_slice($lines, 1) as $line) {
                 $rowNum++;
+                $row = str_getcsv($line, $delimiter);
+
+                if (count($row) === 1 && trim((string) $row[0]) === '') {
+                    continue;
+                }
+
                 try {
                     $this->processImportRow($type, $header, $row);
                     $imported++;
@@ -368,7 +381,6 @@ class ExportController extends BaseApiController
                 }
             }
 
-            fclose($handle);
             DB::commit();
 
             return $this->success([
@@ -378,7 +390,6 @@ class ExportController extends BaseApiController
             ], "Import selesai: {$imported} berhasil, {$failed} gagal");
         } catch (\Exception $e) {
             DB::rollBack();
-            fclose($handle);
             return $this->error('Import gagal: ' . $e->getMessage());
         }
     }
@@ -386,6 +397,10 @@ class ExportController extends BaseApiController
     private function processImportRow(string $type, array $header, array $row): void
     {
         $data = array_combine($header, $row);
+
+        if ($data === false) {
+            throw new \Exception('Jumlah kolom tidak sesuai dengan header (' . count($header) . ')');
+        }
 
         match ($type) {
             'gardu_induks' => $this->importGarduInduk($data),
@@ -397,10 +412,89 @@ class ExportController extends BaseApiController
         };
     }
 
+    private function normalizeHeader(string $header): string
+    {
+        $key = strtolower(trim(preg_replace('/\s+/', ' ', $header)));
+
+        return match ($key) {
+            'meter no' => 'meter_no',
+            'unit name' => 'unit_name',
+            'location' => 'location',
+            'gardu induk', 'gardu induk (kode)' => 'gardu_induk',
+            'titik ukur', 'titik ukur (kode)' => 'titik_ukur',
+            'jenis meter', 'jenis meter (kode)' => 'jenis_meter',
+            'last reading' => 'last_reading',
+            'status' => 'status',
+            'code' => 'code',
+            'nama' => 'name',
+            'region' => 'region',
+            'latitude' => 'latitude',
+            'longitude' => 'longitude',
+            'alamat', 'address' => 'address',
+            'phase' => 'phase',
+            'max capacity' => 'max_capacity',
+            'manufacturer' => 'manufacturer',
+            'description' => 'description',
+            'period' => 'period',
+            'start date' => 'start_date',
+            'end date' => 'end_date',
+            'notes' => 'notes',
+            default => $key,
+        };
+    }
+
+    private function resolveGarduInduk(string $value): GarduInduk
+    {
+        $garduInduk = GarduInduk::where('code', $value)->orWhere('name', $value)->first();
+
+        if (!$garduInduk) {
+            throw new \Exception("Gardu Induk '{$value}' tidak ditemukan. Isi dengan kode (contoh: GI-JKT-001) atau nama gardu induk yang terdaftar.");
+        }
+
+        return $garduInduk;
+    }
+
+    private function resolveTitikUkur(string $value): TitikUkur
+    {
+        $titikUkur = TitikUkur::where('code', $value)->orWhere('name', $value)->first();
+
+        if (!$titikUkur) {
+            throw new \Exception("Titik Ukur '{$value}' tidak ditemukan. Isi dengan kode (contoh: GI-JKT-001-TU-01) atau nama titik ukur yang terdaftar.");
+        }
+
+        return $titikUkur;
+    }
+
+    private function resolveJenisKwhMeter(string $value): JenisKwhMeter
+    {
+        $jenis = JenisKwhMeter::where('code', $value)->orWhere('name', $value)->first();
+
+        if (!$jenis) {
+            throw new \Exception("Jenis Meter '{$value}' tidak ditemukan. Isi dengan kode (contoh: KWH-AMR-005) atau nama jenis meter yang terdaftar.");
+        }
+
+        return $jenis;
+    }
+
+    private function enumValue(?string $value, array $allowed, string $default, string $label): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return $default;
+        }
+
+        if (!in_array($value, $allowed, true)) {
+            throw new \Exception("{$label} '{$value}' tidak valid. Pilihan: " . implode(', ', $allowed));
+        }
+
+        return $value;
+    }
+
     private function importGarduInduk(array $data): void
     {
-        $name = trim($data['Nama'] ?? $data['name'] ?? '');
-        $code = trim($data['Code'] ?? $data['code'] ?? '');
+        $name = trim($data['name'] ?? '');
+        $code = trim($data['code'] ?? '');
 
         if (!$name || !$code) {
             throw new \Exception('Nama dan Code wajib diisi');
@@ -414,18 +508,18 @@ class ExportController extends BaseApiController
         GarduInduk::create([
             'name'      => $name,
             'code'      => $code,
-            'region'    => trim($data['Region'] ?? $data['region'] ?? ''),
-            'latitude'  => (float) ($data['Latitude'] ?? $data['latitude'] ?? 0),
-            'longitude' => (float) ($data['Longitude'] ?? $data['longitude'] ?? 0),
-            'status'    => trim($data['Status'] ?? $data['status'] ?? 'active'),
+            'region'    => trim($data['region'] ?? ''),
+            'latitude'  => (float) ($data['latitude'] ?? 0),
+            'longitude' => (float) ($data['longitude'] ?? 0),
+            'status'    => $this->enumValue($data['status'] ?? '', ['active', 'inactive'], 'active', 'Status'),
         ]);
     }
 
     private function importTitikUkur(array $data): void
     {
-        $name = trim($data['Nama'] ?? $data['name'] ?? '');
-        $code = trim($data['Code'] ?? $data['code'] ?? '');
-        $giCode = trim($data['Gardu Induk'] ?? $data['gardu_induk_code'] ?? '');
+        $name = trim($data['name'] ?? '');
+        $code = trim($data['code'] ?? '');
+        $garduIndukValue = trim($data['gardu_induk'] ?? '');
 
         if (!$name || !$code) {
             throw new \Exception('Nama dan Code wajib diisi');
@@ -436,26 +530,23 @@ class ExportController extends BaseApiController
             throw new \Exception("Code '{$code}' sudah ada");
         }
 
-        $garduInduk = GarduInduk::where('code', $giCode)->first();
-        if (!$garduInduk) {
-            throw new \Exception("Gardu Induk '{$giCode}' tidak ditemukan");
-        }
+        $garduInduk = $this->resolveGarduInduk($garduIndukValue);
 
         TitikUkur::create([
             'name'           => $name,
             'code'           => $code,
             'gardu_induk_id' => $garduInduk->id,
-            'latitude'       => isset($data['Latitude']) || isset($data['latitude']) ? (float) ($data['Latitude'] ?? $data['latitude']) : null,
-            'longitude'      => isset($data['Longitude']) || isset($data['longitude']) ? (float) ($data['Longitude'] ?? $data['longitude']) : null,
-            'address'        => trim($data['Alamat'] ?? $data['address'] ?? ''),
-            'status'         => trim($data['Status'] ?? $data['status'] ?? 'active'),
+            'latitude'       => !empty($data['latitude']) ? (float) $data['latitude'] : null,
+            'longitude'      => !empty($data['longitude']) ? (float) $data['longitude'] : null,
+            'address'        => trim($data['address'] ?? ''),
+            'status'         => $this->enumValue($data['status'] ?? '', ['active', 'inactive'], 'active', 'Status'),
         ]);
     }
 
     private function importJenisKwhMeter(array $data): void
     {
-        $name = trim($data['Nama'] ?? $data['name'] ?? '');
-        $code = trim($data['Code'] ?? $data['code'] ?? '');
+        $name = trim($data['name'] ?? '');
+        $code = trim($data['code'] ?? '');
 
         if (!$name || !$code) {
             throw new \Exception('Nama dan Code wajib diisi');
@@ -469,19 +560,19 @@ class ExportController extends BaseApiController
         JenisKwhMeter::create([
             'name'          => $name,
             'code'          => $code,
-            'phase'         => trim($data['Phase'] ?? $data['phase'] ?? 'single'),
-            'max_capacity'  => !empty($data['Max Capacity'] ?? $data['max_capacity']) ? (float) ($data['Max Capacity'] ?? $data['max_capacity']) : null,
-            'manufacturer'  => trim($data['Manufacturer'] ?? $data['manufacturer'] ?? ''),
-            'description'   => trim($data['Description'] ?? $data['description'] ?? ''),
+            'phase'         => $this->enumValue($data['phase'] ?? '', ['single', 'three'], 'single', 'Phase'),
+            'max_capacity'  => !empty($data['max_capacity']) ? (float) $data['max_capacity'] : null,
+            'manufacturer'  => trim($data['manufacturer'] ?? ''),
+            'description'   => trim($data['description'] ?? ''),
         ]);
     }
 
     private function importKwhMeter(array $data): void
     {
-        $meterNo = trim($data['Meter No'] ?? $data['meter_no'] ?? '');
-        $giCode = trim($data['Gardu Induk'] ?? $data['gardu_induk_code'] ?? '');
-        $unitName = trim($data['Unit Name'] ?? $data['unit_name'] ?? '');
-        $location = trim($data['Location'] ?? $data['location'] ?? '');
+        $meterNo = trim($data['meter_no'] ?? '');
+        $garduIndukValue = trim($data['gardu_induk'] ?? '');
+        $unitName = trim($data['unit_name'] ?? '');
+        $location = trim($data['location'] ?? '');
 
         if (!$meterNo || !$unitName) {
             throw new \Exception('Meter No dan Unit Name wajib diisi');
@@ -492,28 +583,19 @@ class ExportController extends BaseApiController
             throw new \Exception("Meter No '{$meterNo}' sudah ada");
         }
 
-        $garduInduk = GarduInduk::where('code', $giCode)->first();
-        if (!$garduInduk) {
-            throw new \Exception("Gardu Induk '{$giCode}' tidak ditemukan");
-        }
+        $garduInduk = $this->resolveGarduInduk($garduIndukValue);
 
-        $titikUkurCode = trim($data['Titik Ukur'] ?? $data['titik_ukur_code'] ?? '');
+        $titikUkurValue = trim($data['titik_ukur'] ?? '');
         $titikUkurId = null;
-        if ($titikUkurCode) {
-            $titikUkur = TitikUkur::where('code', $titikUkurCode)->first();
-            if (!$titikUkur) {
-                throw new \Exception("Titik Ukur '{$titikUkurCode}' tidak ditemukan");
-            }
+        if ($titikUkurValue) {
+            $titikUkur = $this->resolveTitikUkur($titikUkurValue);
             $titikUkurId = $titikUkur->id;
         }
 
-        $jenisCode = trim($data['Jenis Meter'] ?? $data['jenis_kwh_meter_code'] ?? '');
+        $jenisValue = trim($data['jenis_meter'] ?? '');
         $jenisId = null;
-        if ($jenisCode) {
-            $jenis = JenisKwhMeter::where('code', $jenisCode)->first();
-            if (!$jenis) {
-                throw new \Exception("Jenis Meter '{$jenisCode}' tidak ditemukan");
-            }
+        if ($jenisValue) {
+            $jenis = $this->resolveJenisKwhMeter($jenisValue);
             $jenisId = $jenis->id;
         }
 
@@ -524,33 +606,26 @@ class ExportController extends BaseApiController
             'jenis_kwh_meter_id' => $jenisId,
             'unit_name'          => $unitName,
             'location'           => $location,
-            'last_reading'       => (float) ($data['Last Reading'] ?? $data['last_reading'] ?? 0),
-            'status'             => trim($data['Status'] ?? $data['status'] ?? 'online'),
+            'last_reading'       => (float) ($data['last_reading'] ?? 0),
+            'status'             => $this->enumValue($data['status'] ?? '', ['online', 'offline'], 'online', 'Status'),
             'last_update'        => now(),
         ]);
     }
 
     private function importKonfigurasiMeter(array $data): void
     {
-        $period = trim($data['Period'] ?? $data['period'] ?? '');
-        $tuCode = trim($data['Titik Ukur'] ?? $data['titik_ukur_code'] ?? '');
-        $jenisCode = trim($data['Jenis Meter'] ?? $data['jenis_kwh_meter_code'] ?? '');
+        $period = trim($data['period'] ?? '');
+        $titikUkurValue = trim($data['titik_ukur'] ?? '');
+        $jenisValue = trim($data['jenis_meter'] ?? '');
 
-        if (!$period || !$tuCode || !$jenisCode) {
+        if (!$period || !$titikUkurValue || !$jenisValue) {
             throw new \Exception('Period, Titik Ukur, dan Jenis Meter wajib diisi');
         }
 
-        $titikUkur = TitikUkur::where('code', $tuCode)->first();
-        if (!$titikUkur) {
-            throw new \Exception("Titik Ukur '{$tuCode}' tidak ditemukan");
-        }
+        $titikUkur = $this->resolveTitikUkur($titikUkurValue);
+        $jenis = $this->resolveJenisKwhMeter($jenisValue);
 
-        $jenis = JenisKwhMeter::where('code', $jenisCode)->first();
-        if (!$jenis) {
-            throw new \Exception("Jenis Meter '{$jenisCode}' tidak ditemukan");
-        }
-
-        $startDate = $data['Start Date'] ?? $data['start_date'] ?? null;
+        $startDate = $data['start_date'] ?? null;
         if (!$startDate) {
             throw new \Exception('Start Date wajib diisi');
         }
@@ -560,9 +635,9 @@ class ExportController extends BaseApiController
             'jenis_kwh_meter_id' => $jenis->id,
             'period'             => $period,
             'start_date'         => $startDate,
-            'end_date'           => $data['End Date'] ?? $data['end_date'] ?? null,
-            'status'             => trim($data['Status'] ?? $data['status'] ?? 'active'),
-            'notes'              => trim($data['Notes'] ?? $data['notes'] ?? ''),
+            'end_date'           => $data['end_date'] ?: null,
+            'status'             => $this->enumValue($data['status'] ?? '', ['active', 'inactive', 'expired'], 'active', 'Status'),
+            'notes'              => trim($data['notes'] ?? ''),
         ]);
     }
 
@@ -584,17 +659,17 @@ class ExportController extends BaseApiController
                 'Code', 'Nama', 'Region', 'Latitude', 'Longitude', 'Status',
             ],
             'titik_ukurs' => [
-                'Code', 'Nama', 'Gardu Induk', 'Latitude', 'Longitude', 'Alamat', 'Status',
+                'Code', 'Nama', 'Gardu Induk (Kode)', 'Latitude', 'Longitude', 'Alamat', 'Status',
             ],
             'jenis_kwh_meters' => [
                 'Code', 'Nama', 'Phase', 'Max Capacity', 'Manufacturer', 'Description',
             ],
             'kwh_meters' => [
-                'Meter No', 'Unit Name', 'Location', 'Gardu Induk', 'Titik Ukur',
-                'Jenis Meter', 'Last Reading', 'Status',
+                'Meter No', 'Unit Name', 'Location', 'Gardu Induk (Kode)', 'Titik Ukur (Kode)',
+                'Jenis Meter (Kode)', 'Last Reading', 'Status',
             ],
             'konfigurasi_meters' => [
-                'Titik Ukur', 'Jenis Meter', 'Period', 'Start Date', 'End Date',
+                'Titik Ukur (Kode)', 'Jenis Meter (Kode)', 'Period', 'Start Date', 'End Date',
                 'Status', 'Notes',
             ],
         ];

@@ -32,6 +32,22 @@ function detectDeviceType() {
     return 'Desktop'
 }
 
+function detectWebGL() {
+    try {
+        const canvas = document.createElement('canvas')
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+        if (!gl) return { webgl_vendor: null, webgl_renderer: null }
+        const info = gl.getExtension('WEBGL_debug_renderer_info')
+        if (!info) return { webgl_vendor: null, webgl_renderer: null }
+        return {
+            webgl_vendor: gl.getParameter(info.UNMASKED_VENDOR_WEBGL),
+            webgl_renderer: gl.getParameter(info.UNMASKED_RENDERER_WEBGL),
+        }
+    } catch {
+        return { webgl_vendor: null, webgl_renderer: null }
+    }
+}
+
 export function useFingerprint() {
     const loading = ref(false)
 
@@ -55,7 +71,16 @@ export function useFingerprint() {
                 screen: `${screen.width}x${screen.height}`,
                 language: navigator.language,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezone_offset: new Date().getTimezoneOffset(),
+                platform: navigator.platform || null,
+                hardware_concurrency: navigator.hardwareConcurrency ?? null,
+                device_memory: navigator.deviceMemory ?? null,
+                max_touch_points: navigator.maxTouchPoints ?? 0,
+                color_depth: screen.colorDepth ?? null,
+                pixel_ratio: window.devicePixelRatio ?? null,
+                screen_orientation: screen.orientation?.type ?? null,
                 user_agent: navigator.userAgent,
+                ...detectWebGL(),
             }
 
             return { fingerprintId: fingerprintId.value, deviceInfo: deviceInfo.value }

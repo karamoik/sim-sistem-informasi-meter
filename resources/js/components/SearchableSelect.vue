@@ -9,7 +9,7 @@
       <span :class="modelValue ? '' : 'text-secondary'">
         {{ modelValue || placeholder }}
       </span>
-      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-down" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotate-180': open }" style="transition: transform .2s; flex-shrink: 0;">
+      <svg xmlns="http://www.w3.org/2000/svg" class="" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" :class="{ 'rotate-180': open }" style="transition: transform .2s; flex-shrink: 0;">
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
         <path d="M6 9l6 6l6 -6" />
       </svg>

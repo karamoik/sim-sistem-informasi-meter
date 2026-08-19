@@ -1,14 +1,36 @@
 @import "@tabler/core/dist/css/tabler.min.css";
+@import "@tabler/core/dist/css/tabler-flags.min.css";
+@import "@tabler/core/dist/css/tabler-payments.min.css";
 @import "@tabler/core/dist/css/tabler-vendors.min.css";
+@import "@tabler/core/dist/css/tabler-social.min.css";
 
 :root {
     --tblr-font-sans-serif: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
 }
 
 body {
     font-family: var(--tblr-font-sans-serif);
 }
 
-.page-wrapper {
-    overflow-x: hidden;
+#app {
+    min-height: 100vh;
+}
+
+.page {
+    min-height: 100vh !important;
+}
+
+[data-bs-theme="dark"] .footer {
+    background-color: var(--tblr-bg-surface);
+    border-top-color: var(--tblr-border-color);
+    color: var(--tblr-secondary-color);
+}
+
+[data-bs-theme="dark"] .navbar-vertical {
+    --tblr-navbar-bg: var(--tblr-bg-surface-secondary);
 }

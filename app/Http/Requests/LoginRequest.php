@@ -35,6 +35,16 @@ class LoginRequest extends FormRequest
             'device_info.screen'     => ['nullable', 'string'],
             'device_info.language'   => ['nullable', 'string'],
             'device_info.timezone'   => ['nullable', 'string'],
+            'device_info.timezone_offset' => ['nullable', 'integer'],
+            'device_info.platform'   => ['nullable', 'string'],
+            'device_info.hardware_concurrency' => ['nullable', 'integer'],
+            'device_info.device_memory' => ['nullable', 'integer'],
+            'device_info.max_touch_points' => ['nullable', 'integer'],
+            'device_info.color_depth' => ['nullable', 'integer'],
+            'device_info.pixel_ratio' => ['nullable', 'numeric'],
+            'device_info.screen_orientation' => ['nullable', 'string'],
+            'device_info.webgl_vendor' => ['nullable', 'string'],
+            'device_info.webgl_renderer' => ['nullable', 'string'],
         ];
     }
 

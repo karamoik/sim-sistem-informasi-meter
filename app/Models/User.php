@@ -36,11 +36,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(GarduInduk::class, 'user_gardu_induks')->withTimestamps();
     }
 
-    public function posts(): HasMany
-    {
-        return $this->hasMany(Post::class);
-    }
-
     public function sessions(): HasMany
     {
         return $this->hasMany(UserSession::class);

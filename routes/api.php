@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\UserSettingController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\EditingController;
+use App\Http\Controllers\Api\LoadProfileController;
 
 Route::get('/ping', function () {
     return response()->json([
@@ -60,6 +61,12 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:api', 'throttle:api', 'check.session', 'unit.scope'])->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
+    // Load profile monitoring
+    Route::get('/monitoring/load-profiles/months', [LoadProfileController::class, 'months']);
+    Route::get('/monitoring/load-profiles/daily', [LoadProfileController::class, 'daily']);
+    Route::get('/monitoring/load-profiles/weekly', [LoadProfileController::class, 'weekly']);
+    Route::get('/monitoring/load-profiles/records', [LoadProfileController::class, 'records']);
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
@@ -96,6 +103,13 @@ Route::middleware(['auth:api', 'throttle:api', 'check.session', 'unit.scope'])->
     Route::get('/editing/status', [EditingController::class, 'status']);
     Route::post('/editing/field-change', [EditingController::class, 'fieldChange']);
     Route::post('/editing/field-editing', [EditingController::class, 'fieldEditing']);
+
+    // All roles can read
+    Route::get('/gardu-induks/all', [GarduIndukController::class, 'index']);
+    Route::get('/kwh-meters/all', [KwhMeterController::class, 'index']);
+    Route::get('/jenis-kwh-meters/all', [JenisKwhMeterController::class, 'index']);
+    Route::get('/titik-ukurs/all', [TitikUkurController::class, 'index']);
+    Route::get('/konfigurasi-meters/all', [KonfigurasiMeterController::class, 'index']);
 
     // Admin only: user management
     Route::middleware('role:admin')->group(function () {
@@ -145,12 +159,4 @@ Route::middleware(['auth:api', 'throttle:api', 'check.session', 'unit.scope'])->
 
     Route::get('/konfigurasi-meters/{konfigurasiMeter}/document', [KonfigurasiMeterController::class, 'downloadDocument'])->name('konfigurasi-meters.document');
 
-    // All roles can read
-    Route::get('/gardu-induks/all', [GarduIndukController::class, 'index']);
-    Route::get('/kwh-meters/all', [KwhMeterController::class, 'index']);
-    Route::get('/jenis-kwh-meters/all', [JenisKwhMeterController::class, 'index']);
-    Route::get('/titik-ukurs/all', [TitikUkurController::class, 'index']);
-    Route::get('/konfigurasi-meters/all', [KonfigurasiMeterController::class, 'index']);
-
-    Route::apiResource('posts', PostController::class)->except(['create', 'edit']);
 });

@@ -44,6 +44,12 @@ const routes = [
         meta: { auth: true },
     },
     {
+        path: '/monitoring/load-profiles',
+        name: 'load-profiles',
+        component: () => import('@/pages/LoadProfileMonitoring.vue'),
+        meta: { auth: true },
+    },
+    {
         path: '/gardu-induks',
         name: 'gardu-induks',
         component: () => import('@/pages/GarduIndukIndex.vue'),
@@ -80,24 +86,6 @@ const routes = [
         meta: { auth: true, roles: ['admin'] },
     },
     {
-        path: '/posts',
-        name: 'posts.index',
-        component: () => import('@/pages/PostsIndex.vue'),
-        meta: { auth: true },
-    },
-    {
-        path: '/posts/create',
-        name: 'posts.create',
-        component: () => import('@/pages/PostForm.vue'),
-        meta: { auth: true },
-    },
-    {
-        path: '/posts/:id/edit',
-        name: 'posts.edit',
-        component: () => import('@/pages/PostForm.vue'),
-        meta: { auth: true },
-    },
-    {
         path: '/linked-devices',
         name: 'linked-devices',
         component: () => import('@/pages/LinkedDevices.vue'),
@@ -125,12 +113,6 @@ const routes = [
         path: '/notification-prefs',
         name: 'notification-prefs',
         component: () => import('@/pages/NotificationPrefs.vue'),
-        meta: { auth: true },
-    },
-    {
-        path: '/export-data',
-        name: 'export-data',
-        component: () => import('@/pages/ExportData.vue'),
         meta: { auth: true },
     },
     {

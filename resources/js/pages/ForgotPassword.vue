@@ -3,7 +3,7 @@
     <div class="container-xl" style="max-width: 480px;">
       <div class="text-center mb-4">
         <div class="avatar avatar-lg rounded-3 mx-auto mb-3" :style="{ background: 'linear-gradient(135deg,#4263eb,#7c3aed)' }">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-key" width="28" height="28" viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" class="" width="28" height="28" viewBox="0 0 24 24" stroke-width="2" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M16.25 11.25l-4.5 -4.5l-7.5 7.5a6 6 0 0 0 8.486 8.486l7.5 -7.5" /><circle cx="12.5" cy="7.5" r="1.5" />
             <path d="M18.5 10l-1.5 -1.5" />
@@ -17,7 +17,7 @@
       </p>
 
       <div v-if="error" class="alert alert-danger d-flex align-items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-circle" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" class="" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
           <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 8l0 4" /><path d="M12 16l.01 0" />
         </svg>
@@ -26,7 +26,7 @@
 
       <div v-if="successMsg" class="alert alert-success">
         <div class="d-flex align-items-center gap-2 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" class="" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
             <path d="M5 12l5 5l10 -10" />
           </svg>

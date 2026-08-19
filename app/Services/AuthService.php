@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\UserSession;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthService
@@ -105,26 +106,31 @@ class AuthService
         $user = auth('api')->user();
 
         if ($user && $fingerprintId) {
-            $session = UserSession::where('user_id', $user->id)
-                ->where('fingerprint_id', $fingerprintId)
-                ->active()
-                ->first();
+            DB::transaction(function () use ($user, $fingerprintId) {
+                User::query()->whereKey($user->id)->lockForUpdate()->first();
 
-            if ($session) {
-                $wasMain = $session->is_main;
-                $session->update(['is_active' => false]);
+                $session = UserSession::where('user_id', $user->id)
+                    ->where('fingerprint_id', $fingerprintId)
+                    ->active()
+                    ->first();
 
-                if ($wasMain) {
-                    $nextSession = UserSession::where('user_id', $user->id)
-                        ->active()
-                        ->orderByDesc('last_active_at')
-                        ->first();
+                if ($session) {
+                    $wasMain = $session->is_main;
+                    $session->update(['is_active' => false]);
 
-                    if ($nextSession) {
-                        $nextSession->update(['is_main' => true]);
+                    if ($wasMain) {
+                        $nextSession = UserSession::where('user_id', $user->id)
+                            ->active()
+                            ->orderByDesc('last_active_at')
+                            ->first();
+
+                        if ($nextSession) {
+                            $this->makeMain($nextSession);
+                            $nextSession->update(['is_main' => true]);
+                        }
                     }
                 }
-            }
+            });
         }
 
         auth('api')->logout();
@@ -150,40 +156,128 @@ class AuthService
 
     private function createSession(User $user, array $deviceInfo): int
     {
-        $fingerprintId = $deviceInfo['fingerprint_id'] ?? md5(uniqid('', true));
-        $deviceName = $this->buildDeviceName($deviceInfo);
+        return DB::transaction(function () use ($user, $deviceInfo) {
+            User::query()->whereKey($user->id)->lockForUpdate()->first();
 
-        $existingSession = UserSession::where('user_id', $user->id)
-            ->where('fingerprint_id', $fingerprintId)
-            ->first();
+            $fingerprintId = $deviceInfo['fingerprint_id'] ?? md5(uniqid('', true));
+            $deviceName = $this->buildDeviceName($deviceInfo);
+            $deviceInfo = $this->withDeviceSignature($deviceInfo);
 
-        if ($existingSession) {
-            $existingSession->update([
-                'is_active' => true,
-                'last_active_at' => now(),
-                'ip_address' => $deviceInfo['ip_address'] ?? request()->ip(),
-                'user_agent' => $deviceInfo['user_agent'] ?? request()->userAgent(),
+            $existingSession = UserSession::where('user_id', $user->id)
+                ->where('fingerprint_id', $fingerprintId)
+                ->first();
+
+            if ($existingSession) {
+                $existingSession->update([
+                    'is_active' => true,
+                    'last_active_at' => now(),
+                    'ip_address' => $deviceInfo['ip_address'] ?? request()->ip(),
+                    'user_agent' => $deviceInfo['user_agent'] ?? request()->userAgent(),
+                    'device_name' => $deviceName,
+                    'device_info' => $deviceInfo,
+                ]);
+
+                $this->ensureMainStatus($existingSession);
+                return $existingSession->id;
+            }
+
+            $recognizedSession = UserSession::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->get()
+                ->first(fn (UserSession $s) => $this->matchesDeviceSignature($s, $deviceInfo));
+
+            if ($recognizedSession) {
+                $recognizedSession->update([
+                    'fingerprint_id' => $fingerprintId,
+                    'is_active' => true,
+                    'last_active_at' => now(),
+                    'ip_address' => $deviceInfo['ip_address'] ?? request()->ip(),
+                    'user_agent' => $deviceInfo['user_agent'] ?? request()->userAgent(),
+                    'device_name' => $deviceName,
+                    'device_info' => $deviceInfo,
+                ]);
+
+                $this->ensureMainStatus($recognizedSession);
+                return $recognizedSession->id;
+            }
+
+            $session = UserSession::create([
+                'user_id' => $user->id,
+                'fingerprint_id' => $fingerprintId,
                 'device_name' => $deviceName,
                 'device_info' => $deviceInfo,
+                'ip_address' => $deviceInfo['ip_address'] ?? request()->ip(),
+                'user_agent' => $deviceInfo['user_agent'] ?? request()->userAgent(),
+                'is_main' => false,
+                'is_active' => true,
+                'last_active_at' => now(),
             ]);
-            return $existingSession->id;
+
+            $this->ensureMainStatus($session);
+
+            return $session->id;
+        });
+    }
+
+    private function ensureMainStatus(UserSession $session): void
+    {
+        $hasOtherActive = UserSession::where('user_id', $session->user_id)
+            ->where('id', '!=', $session->id)
+            ->active()
+            ->exists();
+
+        if ($session->is_main && !$hasOtherActive) {
+            $this->makeMain($session);
+            return;
         }
 
-        $hasAnySession = UserSession::where('user_id', $user->id)->exists();
+        if (!$session->is_main && !$hasOtherActive) {
+            $this->makeMain($session);
+            $session->update(['is_main' => true]);
+        }
+    }
 
-        $session = UserSession::create([
-            'user_id' => $user->id,
-            'fingerprint_id' => $fingerprintId,
-            'device_name' => $deviceName,
-            'device_info' => $deviceInfo,
-            'ip_address' => $deviceInfo['ip_address'] ?? request()->ip(),
-            'user_agent' => $deviceInfo['user_agent'] ?? request()->userAgent(),
-            'is_main' => !$hasAnySession,
-            'is_active' => true,
-            'last_active_at' => now(),
-        ]);
+    private function makeMain(UserSession $session): void
+    {
+        UserSession::where('user_id', $session->user_id)
+            ->where('id', '!=', $session->id)
+            ->where('is_main', true)
+            ->update(['is_main' => false]);
+    }
 
-        return $session->id;
+    private function withDeviceSignature(array $deviceInfo): array
+    {
+        $deviceInfo['device_signature'] = hash('sha256', implode('|', [
+            $deviceInfo['os'] ?? '',
+            $deviceInfo['browser'] ?? '',
+            $deviceInfo['device_type'] ?? '',
+            $deviceInfo['screen'] ?? '',
+            $deviceInfo['timezone'] ?? '',
+            $deviceInfo['language'] ?? '',
+            $deviceInfo['platform'] ?? '',
+            $deviceInfo['webgl_renderer'] ?? '',
+        ]));
+
+        return $deviceInfo;
+    }
+
+    private function matchesDeviceSignature(UserSession $session, array $deviceInfo): bool
+    {
+        $stored = $session->device_info ?? [];
+
+        if (($stored['device_signature'] ?? null) !== null) {
+            return ($stored['device_signature'] ?? '') === ($deviceInfo['device_signature'] ?? '');
+        }
+
+        foreach (['os', 'browser', 'device_type', 'screen', 'timezone', 'language'] as $key) {
+            $a = $stored[$key] ?? null;
+            $b = $deviceInfo[$key] ?? null;
+            if ($a === null || $b === null || $a !== $b) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function buildDeviceName(array $deviceInfo): string
