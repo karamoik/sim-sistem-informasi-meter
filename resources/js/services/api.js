@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const api = axios.create({
     baseURL: '/api',
@@ -7,6 +8,8 @@ const api = axios.create({
         'Accept': 'application/json',
     },
 })
+
+const { toast } = useGlobalToast()
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token')
@@ -36,6 +39,19 @@ api.interceptors.response.use(
             localStorage.removeItem('user')
             localStorage.removeItem('session_fingerprint')
             window.location.href = '/login'
+        }
+        if (error.response?.status === 403 && !window.location.pathname.startsWith('/403')) {
+            window.location.href = '/403'
+        }
+        if (error.response?.status === 404 && error.response?.data?.message?.includes('No query results for model')) {
+            error.response.data.message = 'Data tidak ditemukan.'
+        }
+        if (!error.response) {
+            if (error.code !== 'ERR_CANCELED') {
+                toast('Tidak dapat terhubung ke server. Periksa koneksi Anda.', 'error')
+            }
+        } else if (error.response.status >= 500) {
+            toast(error.response.data?.message || 'Terjadi kesalahan pada server.', 'error')
         }
         return Promise.reject(error)
     }

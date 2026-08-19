@@ -43,7 +43,7 @@
               <div class="collapse" id="sub-master" :class="{ show: hasMasterActive }">
                 <ul class="nav">
                   <li class="nav-item">
-                    <router-link to="/gardu-induks" class="nav-link" :class="{ active: $route.name === 'gardu-induks' }">
+                    <router-link to="/gardu-induk" class="nav-link" :class="{ active: $route.name === 'gardu-induk' }">
                       <span class="nav-link-title">Gardu Induk</span>
                     </router-link>
                   </li>
@@ -161,6 +161,7 @@
       </footer>
     </div>
   </div>
+  <GlobalToast />
 </template>
 
 <script setup>
@@ -169,6 +170,7 @@ import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { IconBolt, IconGauge, IconList, IconBuildingFactory, IconUsers, IconUser, IconLock, IconDevices, IconClock, IconBell, IconPalette, IconShield, IconKeyboard, IconMoon, IconSun, IconLogout, IconChartLine } from '@tabler/icons-vue'
+import GlobalToast from '@/components/Toast.vue'
 
 const router = useRouter()
 const route = useRoute()

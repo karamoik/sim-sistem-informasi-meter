@@ -127,6 +127,17 @@ const routes = [
         component: () => import('@/pages/KeyboardShortcuts.vue'),
         meta: { auth: true },
     },
+    {
+        path: '/403',
+        name: 'forbidden',
+        component: () => import('@/pages/errors/Forbidden.vue'),
+        meta: { auth: true },
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: () => import('@/pages/errors/NotFound.vue'),
+    },
 ]
 
 const router = createRouter({
@@ -158,7 +169,7 @@ router.beforeEach((to, from, next) => {
         try {
             const user = JSON.parse(localStorage.getItem('user'))
             if (!user || !to.meta.roles.includes(user.role)) {
-                return next({ name: 'dashboard' })
+                return next({ name: 'forbidden' })
             }
         } catch {
             return next({ name: 'login' })
