@@ -50,6 +50,12 @@ const routes = [
         meta: { auth: true },
     },
     {
+        path: '/monitoring/load-profile-availability',
+        name: 'load-profile-availability',
+        component: () => import('@/pages/LoadProfileAvailability.vue'),
+        meta: { auth: true },
+    },
+    {
         path: '/gardu-induks',
         name: 'gardu-induks',
         component: () => import('@/pages/GarduIndukIndex.vue'),

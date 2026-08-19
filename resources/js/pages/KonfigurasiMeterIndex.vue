@@ -38,6 +38,7 @@
               <th>Titik Ukur</th>
               <th>Gardu Induk</th>
               <th>Jenis Meter</th>
+              <th>KWH Meter</th>
               <th class="text-center">Periode</th>
               <th class="text-center">Tanggal</th>
               <th class="text-center">Status</th>
@@ -56,6 +57,10 @@
               <td>
                 <p class="fw-bold">{{ k.jenis_kwh_meter?.name }}</p>
                 <p class="text-muted small">{{ k.jenis_kwh_meter?.phase === 'single' ? '1 Phase' : '3 Phase' }} {{ k.jenis_kwh_meter?.max_capacity ? '- ' + Number(k.jenis_kwh_meter.max_capacity).toLocaleString('id-ID') + ' VA' : '' }}</p>
+              </td>
+              <td>
+                <p class="fw-bold font-monospace">{{ k.kwh_meter?.meter_no || '-' }}</p>
+                <p v-if="k.kwh_meter" class="text-muted small">{{ k.kwh_meter.unit_name || '' }}</p>
               </td>
               <td class="text-center">
                 <span class="badge text-bg-secondary">{{ k.period }}</span>
@@ -87,7 +92,7 @@
               </td>
             </tr>
             <tr v-if="!konfigurasiList.length">
-              <td colspan="9" class="text-center text-muted py-4">Tidak ada data konfigurasi meter</td>
+              <td colspan="10" class="text-center text-muted py-4">Tidak ada data konfigurasi meter</td>
             </tr>
           </tbody>
         </table>
@@ -178,6 +183,16 @@
                     <option value="">Pilih Jenis Meter</option>
                     <option v-for="j in allJenisMeters" :key="j.id" :value="j.id">{{ j.name }} ({{ j.phase === 'single' ? '1 Ph' : '3 Ph' }})</option>
                   </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">KWH Meter (yang terpasang)</label>
+                  <select v-model="form.kwh_meter_id" required class="form-select">
+                    <option value="">Pilih Meter</option>
+                    <option v-for="m in filteredMeters" :key="m.id" :value="m.id">
+                      {{ m.meter_no }} <template v-if="m.unit_name">— {{ m.unit_name }}</template>
+                    </option>
+                  </select>
+                  <div class="form-hint">Satu titik ukur memakai satu meter per periode. Ganti meter = buat konfigurasi periode baru; data historis tetap tersimpan.</div>
                 </div>
                 <div class="mb-3 position-relative">
                   <label class="form-label">Periode</label>
@@ -294,7 +309,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/services/api'
 import { useEditing } from '@/composables/useEditing'
 import EditingIndicator from '@/components/EditingIndicator.vue'
@@ -306,6 +321,7 @@ const confirmDialogRef = ref(null)
 const konfigurasiList = ref([])
 const allTitikUkurs = ref([])
 const allJenisMeters = ref([])
+const allKwhMeters = ref([])
 const search = ref('')
 const filterStatus = ref('')
 const showTrashed = ref(false)
@@ -327,7 +343,12 @@ const importFile = ref(null)
 const importing = ref(false)
 const importResult = ref(null)
 
-const form = ref({ titik_ukur_id: '', jenis_kwh_meter_id: '', period: '', start_date: '', end_date: '', status: 'active', notes: '' })
+const form = ref({ titik_ukur_id: '', kwh_meter_id: '', jenis_kwh_meter_id: '', period: '', start_date: '', end_date: '', status: 'active', notes: '' })
+
+const filteredMeters = computed(() => {
+  if (!form.value.titik_ukur_id) return allKwhMeters.value
+  return allKwhMeters.value.filter(m => String(m.titik_ukur_id) === String(form.value.titik_ukur_id))
+})
 
 const lastBroadcastValues = ref({})
 let formWatcher = null
@@ -370,9 +391,10 @@ watch(otherFieldChanges, () => {
 
 async function fetchRefs() {
   try {
-    const [tu, jm] = await Promise.all([api.get('/titik-ukurs/all'), api.get('/jenis-kwh-meters/all')])
+    const [tu, jm, km] = await Promise.all([api.get('/titik-ukurs/all'), api.get('/jenis-kwh-meters/all'), api.get('/kwh-meters/all')])
     allTitikUkurs.value = tu.data.data || tu.data
     allJenisMeters.value = jm.data.data || jm.data
+    allKwhMeters.value = km.data.data || km.data
   } catch (e) { console.error(e) }
 }
 
@@ -461,14 +483,14 @@ function openForm(item = null) {
   existingDocumentPath.value = null
   if (item) {
     editingId.value = item.id
-    form.value = { titik_ukur_id: item.titik_ukur_id, jenis_kwh_meter_id: item.jenis_kwh_meter_id, period: item.period, start_date: item.start_date?.split('T')[0] || '', end_date: item.end_date?.split('T')[0] || '', status: item.status, notes: item.notes || '' }
+    form.value = { titik_ukur_id: item.titik_ukur_id, kwh_meter_id: item.kwh_meter_id || '', jenis_kwh_meter_id: item.jenis_kwh_meter_id, period: item.period, start_date: item.start_date?.split('T')[0] || '', end_date: item.end_date?.split('T')[0] || '', status: item.status, notes: item.notes || '' }
     if (item.document_path) {
       existingDocumentPath.value = item.document_path
       documentPreview.value = { name: item.document_path.split('/').pop(), size: 0, file: null }
     }
   } else {
     editingId.value = null
-    form.value = { titik_ukur_id: '', jenis_kwh_meter_id: '', period: '', start_date: '', end_date: '', status: 'active', notes: '' }
+    form.value = { titik_ukur_id: '', kwh_meter_id: '', jenis_kwh_meter_id: '', period: '', start_date: '', end_date: '', status: 'active', notes: '' }
   }
   showForm.value = true
   if (editingId.value) {

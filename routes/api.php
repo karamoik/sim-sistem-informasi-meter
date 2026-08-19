@@ -66,6 +66,8 @@ Route::middleware(['auth:api', 'throttle:api', 'check.session', 'unit.scope'])->
     Route::get('/monitoring/load-profiles/daily', [LoadProfileController::class, 'daily']);
     Route::get('/monitoring/load-profiles/weekly', [LoadProfileController::class, 'weekly']);
     Route::get('/monitoring/load-profiles/records', [LoadProfileController::class, 'records']);
+    Route::get('/monitoring/load-profiles/availability', [LoadProfileController::class, 'availability']);
+    Route::get('/monitoring/load-profiles/availability-detail', [LoadProfileController::class, 'availabilityDetail']);
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);

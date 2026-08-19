@@ -20,7 +20,7 @@ class KonfigurasiMeterController extends BaseApiController
 
     public function index(Request $request): JsonResponse
     {
-        $query = KonfigurasiMeter::with(['titikUkur.garduInduk', 'jenisKwhMeter']);
+        $query = KonfigurasiMeter::with(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']);
 
         if ($request->has('_scope_gardu_induk_ids')) {
             $scopeIds = $request->input('_scope_gardu_induk_ids');
@@ -69,7 +69,7 @@ class KonfigurasiMeterController extends BaseApiController
 
     public function show(KonfigurasiMeter $konfigurasiMeter): JsonResponse
     {
-        $konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter']);
+        $konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']);
 
         return $this->success($konfigurasiMeter);
     }
@@ -78,6 +78,7 @@ class KonfigurasiMeterController extends BaseApiController
     {
         $validated = $request->validate([
             'titik_ukur_id'      => 'required|exists:titik_ukurs,id',
+            'kwh_meter_id'       => 'required|exists:kwh_meters,id',
             'jenis_kwh_meter_id' => 'required|exists:jenis_kwh_meters,id',
             'period'             => 'required|string|max:30',
             'start_date'         => 'required|date',
@@ -100,13 +101,14 @@ class KonfigurasiMeterController extends BaseApiController
 
         broadcast(new CrudUpdated('konfigurasi_meter', 'created', $konfigurasi->id, $konfigurasi->period));
 
-        return $this->success($konfigurasi->load(['titikUkur.garduInduk', 'jenisKwhMeter']), 'Konfigurasi meter created', 201);
+        return $this->success($konfigurasi->load(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']), 'Konfigurasi meter created', 201);
     }
 
     public function update(Request $request, KonfigurasiMeter $konfigurasiMeter): JsonResponse
     {
         $validated = $request->validate([
             'titik_ukur_id'      => 'sometimes|exists:titik_ukurs,id',
+            'kwh_meter_id'       => 'sometimes|exists:kwh_meters,id',
             'jenis_kwh_meter_id' => 'sometimes|exists:jenis_kwh_meters,id',
             'period'             => 'sometimes|string|max:30',
             'start_date'         => 'sometimes|date',
@@ -130,7 +132,7 @@ class KonfigurasiMeterController extends BaseApiController
 
         broadcast(new CrudUpdated('konfigurasi_meter', 'updated', $konfigurasiMeter->id, $konfigurasiMeter->period));
 
-        return $this->success($konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter']), 'Konfigurasi meter updated');
+        return $this->success($konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']), 'Konfigurasi meter updated');
     }
 
     public function destroy(KonfigurasiMeter $konfigurasiMeter): JsonResponse
@@ -147,7 +149,7 @@ class KonfigurasiMeterController extends BaseApiController
     {
         $perPage = (int) $request->input('per_page', 20);
         $konfigurasi = KonfigurasiMeter::onlyTrashed()
-            ->with(['titikUkur.garduInduk', 'jenisKwhMeter'])
+            ->with(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter'])
             ->orderByDesc('start_date')
             ->paginate($perPage);
 
@@ -161,7 +163,7 @@ class KonfigurasiMeterController extends BaseApiController
 
         broadcast(new CrudUpdated('konfigurasi_meter', 'restored', $konfigurasiMeter->id, $konfigurasiMeter->period));
 
-        return $this->success($konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter']), 'Konfigurasi meter restored');
+        return $this->success($konfigurasiMeter->load(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']), 'Konfigurasi meter restored');
     }
 
     public function forceDelete(int $id): JsonResponse

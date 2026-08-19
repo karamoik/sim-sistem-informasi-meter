@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\LoadProfile;
 use App\Models\TitikUkur;
+use App\Models\KonfigurasiMeter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -116,6 +117,185 @@ class LoadProfileController extends BaseApiController
             'titik_ukur' => $this->formatTitikUkur($titikUkur),
             'start' => $validated['start'],
             'end' => $validated['end'],
+            'records' => $records,
+        ]);
+    }
+
+    public function availability(Request $request): JsonResponse
+    {
+        $month = $request->validate(['month' => 'required|date_format:Y-m'])['month'];
+
+        $start = "{$month}-01 00:00:00";
+        $end = date('Y-m-t', strtotime("{$month}-01")) . ' 23:59:59';
+
+        $scopeIds = $request->input('_scope_gardu_induk_ids', []);
+
+        $titikUkurs = TitikUkur::with('garduInduk')
+            ->when(!empty($scopeIds), fn ($q) => $q->whereIn('gardu_induk_id', $scopeIds))
+            ->orderBy('code')
+            ->get();
+
+        $slotCounts = LoadProfile::query()
+            ->whereBetween('recorded_at', [$start, $end])
+            ->when($titikUkurs->isNotEmpty(), fn ($q) => $q->whereIn('titik_ukur_id', $titikUkurs->pluck('id')))
+            ->selectRaw('titik_ukur_id, DAY(recorded_at) AS day, COUNT(*) AS cnt')
+            ->groupBy('titik_ukur_id', 'day')
+            ->get()
+            ->groupBy('titik_ukur_id');
+
+        $slotsPerDay = 48;
+        $monthDays = (int) date('t', strtotime("{$month}-01"));
+        $weekCount = (int) ceil($monthDays / 7);
+
+        $items = [];
+        foreach ($titikUkurs as $tu) {
+            $byDay = $slotCounts->get($tu->id, collect());
+
+            $weeks = [];
+            $totalActual = 0;
+            $totalExpected = 0;
+
+            for ($w = 1; $w <= $weekCount; $w++) {
+                $dayStart = ($w - 1) * 7 + 1;
+                $dayEnd = min($w * 7, $monthDays);
+
+                $expected = ($dayEnd - $dayStart + 1) * $slotsPerDay;
+                $actual = $byDay
+                    ->filter(fn ($r) => (int) $r->day >= $dayStart && (int) $r->day <= $dayEnd)
+                    ->sum('cnt');
+
+                $totalActual += $actual;
+                $totalExpected += $expected;
+
+                $weeks[] = [
+                    'week' => $w,
+                    'days' => $dayEnd - $dayStart + 1,
+                    'expected_slots' => $expected,
+                    'actual_slots' => $actual,
+                    'percentage' => $expected > 0 ? round(($actual / $expected) * 100, 2) : 0,
+                ];
+            }
+
+            $items[] = [
+                'id' => $tu->id,
+                'code' => $tu->code,
+                'name' => $tu->name,
+                'gardu_induk' => $tu->garduInduk?->name,
+                'total_expected_slots' => $totalExpected,
+                'total_actual_slots' => $totalActual,
+                'percentage' => $totalExpected > 0 ? round(($totalActual / $totalExpected) * 100, 2) : 0,
+                'weeks' => $weeks,
+            ];
+        }
+
+        return $this->success([
+            'month' => $month,
+            'slots_per_day' => $slotsPerDay,
+            'week_count' => $weekCount,
+            'titik_ukurs' => $items,
+        ]);
+    }
+
+    public function availabilityDetail(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'titik_ukur_id' => 'required|integer|exists:titik_ukurs,id',
+            'start' => 'required|date_format:Y-m-d',
+            'end' => 'required|date_format:Y-m-d|after_or_equal:start',
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:200',
+        ]);
+
+        $titikUkur = TitikUkur::with(['garduInduk', 'kwhMeters.jenisKwhMeter'])
+            ->findOrFail($validated['titik_ukur_id']);
+
+        $scopeIds = $request->input('_scope_gardu_induk_ids', []);
+        if (!empty($scopeIds) && !in_array($titikUkur->gardu_induk_id, $scopeIds)) {
+            abort(403, 'Titik ukur berada di luar scope unit anda.');
+        }
+
+        $perPage = (int) ($validated['per_page'] ?? 100);
+        $start = "{$validated['start']} 00:00:00";
+        $end = "{$validated['end']} 23:59:59";
+
+        $records = LoadProfile::forTitikUkur($titikUkur->id)
+            ->between($start, $end)
+            ->orderBy('recorded_at')
+            ->paginate($perPage, ['*'], 'page', $validated['page'] ?? 1);
+
+        $records->getCollection()->transform(fn (LoadProfile $r) => $this->formatRecord($r));
+
+        $days = (int) ((strtotime($validated['end']) - strtotime($validated['start'])) / 86400) + 1;
+        $expectedSlots = $days * 48;
+        $actualSlots = $records->total();
+
+        $konfigurasi = KonfigurasiMeter::where('titik_ukur_id', $titikUkur->id)
+            ->with('kwhMeter.jenisKwhMeter')
+            ->whereDate('start_date', '<=', $validated['end'])
+            ->where(function ($q) use ($validated) {
+                $q->whereNull('end_date')->orWhereDate('end_date', '>=', $validated['start']);
+            })
+            ->orderBy('start_date')
+            ->get();
+
+        $hasConfiguredMeters = $konfigurasi->contains(fn ($k) => !empty($k->kwh_meter_id));
+
+        if ($hasConfiguredMeters) {
+            $meters = $konfigurasi
+                ->filter(fn ($k) => !empty($k->kwh_meter_id) && $k->kwhMeter)
+                ->map(function ($k) {
+                    $meter = $k->kwhMeter;
+
+                    return [
+                        'id' => $meter->id,
+                        'meter_no' => $meter->meter_no,
+                        'unit_name' => $meter->unit_name,
+                        'location' => $meter->location,
+                        'status' => $meter->status,
+                        'last_reading' => $meter->last_reading,
+                        'last_update' => $meter->last_update?->format('d/m/Y H:i'),
+                        'jenis_meter' => $meter->jenisKwhMeter?->name,
+                        'period' => $k->period,
+                        'start_date' => $k->start_date?->format('d/m/Y'),
+                        'end_date' => $k->end_date?->format('d/m/Y'),
+                    ];
+                })
+                ->values();
+        } else {
+            $meters = $titikUkur->kwhMeters->map(function ($meter) {
+                return [
+                    'id' => $meter->id,
+                    'meter_no' => $meter->meter_no,
+                    'unit_name' => $meter->unit_name,
+                    'location' => $meter->location,
+                    'status' => $meter->status,
+                    'last_reading' => $meter->last_reading,
+                    'last_update' => $meter->last_update?->format('d/m/Y H:i'),
+                    'jenis_meter' => $meter->jenisKwhMeter?->name,
+                    'period' => null,
+                    'start_date' => null,
+                    'end_date' => null,
+                ];
+            })->values();
+        }
+
+        return $this->success([
+            'titik_ukur' => [
+                'id' => $titikUkur->id,
+                'code' => $titikUkur->code,
+                'name' => $titikUkur->name,
+                'status' => $titikUkur->status,
+                'address' => $titikUkur->address,
+                'latitude' => $titikUkur->latitude,
+                'longitude' => $titikUkur->longitude,
+                'gardu_induk' => $titikUkur->garduInduk?->name,
+            ],
+            'meters' => $meters,
+            'start' => $validated['start'],
+            'end' => $validated['end'],
+            'expected_slots' => $expectedSlots,
+            'actual_slots' => $actualSlots,
+            'percentage' => $expectedSlots > 0 ? round(($actualSlots / $expectedSlots) * 100, 2) : 0,
             'records' => $records,
         ]);
     }

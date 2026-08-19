@@ -11,8 +11,9 @@ class KonfigurasiMeter extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
+protected $fillable = [
         'titik_ukur_id',
+        'kwh_meter_id',
         'jenis_kwh_meter_id',
         'period',
         'start_date',
@@ -27,6 +28,16 @@ class KonfigurasiMeter extends Model
         'end_date' => 'date',
     ];
 
+    public function kwhMeter(): BelongsTo
+    {
+        return $this->belongsTo(KwhMeter::class);
+    }
+
+    public function titikUkur(): BelongsTo
+    {
+        return $this->belongsTo(TitikUkur::class);
+    }
+
     public function documentUrl(): ?string
     {
         if (!$this->document_path) {
@@ -37,11 +48,6 @@ class KonfigurasiMeter extends Model
             $this->document_path,
             now()->addHours(1)
         );
-    }
-
-    public function titikUkur(): BelongsTo
-    {
-        return $this->belongsTo(TitikUkur::class);
     }
 
     public function jenisKwhMeter(): BelongsTo

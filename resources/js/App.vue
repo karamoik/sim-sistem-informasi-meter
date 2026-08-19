@@ -28,6 +28,12 @@
                 <span class="nav-link-title">Load Profile</span>
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/monitoring/load-profile-availability" class="nav-link" :class="{ active: $route.name === 'load-profile-availability' }">
+                <span class="nav-link-icon d-none d-lg-inline-block"><IconChartHistogram size="24" /></span>
+                <span class="nav-link-title">Monitoring Load Profile</span>
+              </router-link>
+            </li>
             <li v-if="canWrite" class="nav-item">
               <router-link to="/kwh-meters" class="nav-link" :class="{ active: $route.name === 'kwh-meters' }">
                 <span class="nav-link-icon d-none d-lg-inline-block"><IconList size="24" /></span>
@@ -43,7 +49,7 @@
               <div class="collapse" id="sub-master" :class="{ show: hasMasterActive }">
                 <ul class="nav">
                   <li class="nav-item">
-                    <router-link to="/gardu-induk" class="nav-link" :class="{ active: $route.name === 'gardu-induk' }">
+                    <router-link to="/gardu-induks" class="nav-link" :class="{ active: $route.name === 'gardu-induks' }">
                       <span class="nav-link-title">Gardu Induk</span>
                     </router-link>
                   </li>
@@ -161,7 +167,6 @@
       </footer>
     </div>
   </div>
-  <GlobalToast />
 </template>
 
 <script setup>
@@ -169,8 +174,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/services/api'
 import { useDarkMode } from '@/composables/useDarkMode'
-import { IconBolt, IconGauge, IconList, IconBuildingFactory, IconUsers, IconUser, IconLock, IconDevices, IconClock, IconBell, IconPalette, IconShield, IconKeyboard, IconMoon, IconSun, IconLogout, IconChartLine } from '@tabler/icons-vue'
-import GlobalToast from '@/components/Toast.vue'
+import { IconBolt, IconGauge, IconList, IconBuildingFactory, IconUsers, IconUser, IconLock, IconDevices, IconClock, IconBell, IconPalette, IconShield, IconKeyboard, IconMoon, IconSun, IconLogout, IconChartLine, IconChartHistogram } from '@tabler/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
