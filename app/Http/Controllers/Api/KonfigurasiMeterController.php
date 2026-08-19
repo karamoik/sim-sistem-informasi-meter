@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Events\CrudUpdated;
 use App\Models\KonfigurasiMeter;
 use App\Services\PdfScannerService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\StreamedResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
@@ -108,7 +110,7 @@ class KonfigurasiMeterController extends BaseApiController
     {
         $validated = $request->validate([
             'titik_ukur_id'      => 'sometimes|exists:titik_ukurs,id',
-            'kwh_meter_id'       => 'sometimes|exists:kwh_meters,id',
+            'kwh_meter_id'       => 'sometimes|nullable|exists:kwh_meters,id',
             'jenis_kwh_meter_id' => 'sometimes|exists:jenis_kwh_meters,id',
             'period'             => 'sometimes|string|max:30',
             'start_date'         => 'sometimes|date',
@@ -143,6 +145,66 @@ class KonfigurasiMeterController extends BaseApiController
         broadcast(new CrudUpdated('konfigurasi_meter', 'deleted', null, $period));
 
         return $this->success(null, 'Konfigurasi meter deleted');
+    }
+
+    public function replace(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'titik_ukur_id'      => 'required|exists:titik_ukurs,id',
+            'old_konfigurasi_id' => 'required|exists:konfigurasi_meters,id',
+            'kwh_meter_id'       => 'required|exists:kwh_meters,id',
+            'jenis_kwh_meter_id' => 'required|exists:jenis_kwh_meters,id',
+            'period'             => 'required|string|max:30',
+            'start_date'         => 'required|date',
+            'end_date'           => 'sometimes|nullable|date|after_or_equal:start_date',
+            'notes'              => 'sometimes|nullable|string',
+        ]);
+
+        return DB::transaction(function () use ($validated) {
+            $old = KonfigurasiMeter::lockForUpdate()->findOrFail($validated['old_konfigurasi_id']);
+
+            abort_if($old->titik_ukur_id !== (int) $validated['titik_ukur_id'], 422, 'Konfigurasi lama tidak sesuai dengan titik ukur');
+
+            $newStart = Carbon::parse($validated['start_date']);
+
+            if ($old->start_date && Carbon::parse($old->start_date)->gte($newStart)) {
+                throw ValidationException::withMessages([
+                    'start_date' => 'Tanggal mulai baru harus setelah tanggal mulai periode lama (' . $old->start_date->format('d/m/Y') . ')',
+                ]);
+            }
+
+            $closeOld = $old->end_date === null || Carbon::parse($old->end_date)->gte($newStart);
+            $oldEndDate = null;
+
+            if ($closeOld) {
+                $oldEndDate = $newStart->copy()->subDay();
+                $old->update([
+                    'end_date' => $oldEndDate->format('Y-m-d'),
+                    'status'   => 'expired',
+                ]);
+
+                broadcast(new CrudUpdated('konfigurasi_meter', 'updated', $old->id, $old->period));
+            }
+
+            $konfigurasi = KonfigurasiMeter::create([
+                'titik_ukur_id'      => $validated['titik_ukur_id'],
+                'kwh_meter_id'       => $validated['kwh_meter_id'],
+                'jenis_kwh_meter_id' => $validated['jenis_kwh_meter_id'],
+                'period'             => $validated['period'],
+                'start_date'         => $validated['start_date'],
+                'end_date'           => $validated['end_date'] ?? null,
+                'status'             => 'active',
+                'notes'              => $validated['notes'] ?? null,
+            ]);
+
+            broadcast(new CrudUpdated('konfigurasi_meter', 'created', $konfigurasi->id, $konfigurasi->period));
+
+            return $this->success([
+                'konfigurasi' => $konfigurasi->load(['titikUkur.garduInduk', 'jenisKwhMeter', 'kwhMeter']),
+                'old_closed' => $closeOld,
+                'old_end_date' => $oldEndDate?->format('d/m/Y'),
+            ], $closeOld ? 'Meter baru dibuat, periode lama ditutup otomatis' : 'Konfigurasi meter baru dibuat');
+        });
     }
 
     public function trashed(Request $request): JsonResponse

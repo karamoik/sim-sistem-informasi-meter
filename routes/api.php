@@ -144,6 +144,7 @@ Route::middleware(['auth:api', 'throttle:api', 'check.session', 'unit.scope'])->
         Route::apiResource('titik-ukurs', TitikUkurController::class)->except(['create', 'edit']);
 
         Route::get('/konfigurasi-meters/trashed', [KonfigurasiMeterController::class, 'trashed']);
+        Route::post('/konfigurasi-meters/replace', [KonfigurasiMeterController::class, 'replace']);
         Route::post('/konfigurasi-meters/{id}/restore', [KonfigurasiMeterController::class, 'restore']);
         Route::delete('/konfigurasi-meters/{id}/force-delete', [KonfigurasiMeterController::class, 'forceDelete']);
         Route::apiResource('konfigurasi-meters', KonfigurasiMeterController::class)->except(['create', 'edit']);
