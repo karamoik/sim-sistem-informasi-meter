@@ -356,162 +356,171 @@
                 </table>
               </div>
 
-              <div class="d-flex align-items-center justify-content-between mb-3 gap-2">
-                <h6 class="text-uppercase text-muted small fw-bold mb-0">Form Konfigurasi</h6>
-                <div class="btn-group btn-group-sm">
-                  <button type="button" class="btn" :class="detailMode === 'edit' ? 'btn-primary' : 'btn-outline-primary'" @click="switchDetailMode('edit')">Edit {{ detailOld?.period }}</button>
-                  <button type="button" class="btn" :class="detailMode === 'add' ? 'btn-success' : 'btn-outline-success'" @click="switchDetailMode('add')">Tambah Meter</button>
-                </div>
+              <div class="d-grid gap-2 d-md-flex mb-3">
+                <button type="button" class="btn btn-primary flex-fill" :class="detailMode === 'edit' ? 'active' : ''" @click="switchDetailMode('edit')">
+                  <IconPencil size="18" class="me-1" /> Edit Periode {{ detailOld?.period }}
+                </button>
+                <button type="button" class="btn btn-success flex-fill" :class="detailMode === 'add' ? 'active' : ''" @click="switchDetailMode('add')">
+                  <IconPlus size="18" class="me-1" /> Tambah Meter Baru
+                </button>
               </div>
 
-              <form v-if="detailMode === 'edit'" @submit.prevent="saveDetail">
-                <EditingIndicator
-                  :visible="isEditingByOthers"
-                  :message="warningMessage"
-                  :editors="otherEditors"
-                />
-                <div class="mb-3">
-                  <label class="form-label">Jenis KWH Meter</label>
-                  <select v-model="form.jenis_kwh_meter_id" required class="form-select">
-                    <option value="">Pilih Jenis Meter</option>
-                    <option v-for="j in allJenisMeters" :key="j.id" :value="j.id">{{ j.name }} ({{ j.phase === 'single' ? '1 Ph' : '3 Ph' }})</option>
-                  </select>
+              <div v-if="detailMode === 'edit'" class="border rounded p-3 mb-2">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">Edit Periode {{ detailOld?.period }}</h6>
+                  <button type="button" class="btn btn-sm btn-link p-0" @click="switchDetailMode(null)">Kembali ke riwayat</button>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label">KWH Meter (yang terpasang)</label>
-                  <select v-model="form.kwh_meter_id" class="form-select">
-                    <option value="">Belum ditetapkan</option>
-                    <option v-for="m in filteredMeters" :key="m.id" :value="m.id">
-                      {{ m.meter_no }} <template v-if="m.unit_name">— {{ m.unit_name }}</template>
-                    </option>
-                  </select>
-                  <div class="form-hint">Ganti meter = buat periode baru lewat "Tambah Meter". Data historis tetap tersimpan.</div>
-                </div>
-                <div class="mb-3 position-relative">
-                  <label class="form-label">Periode</label>
-                  <input v-model="form.period" type="text" required placeholder="Contoh: 2026-Q3"
-                    class="form-control"
-                    :class="getFieldEditors('period').length ? 'is-warning' : ''"
-                    @focus="broadcastFieldEditing('period')" @blur="broadcastFieldEditing(null)" />
-                  <FieldEditorBadge v-if="getFieldEditors('period').length" :editors="getFieldEditors('period')" />
-                </div>
-                <div class="row g-3 mb-3">
-                  <div class="col-md-6 position-relative">
-                    <label class="form-label">Tanggal Mulai</label>
-                    <input v-model="form.start_date" type="date" required
-                      class="form-control"
-                      :class="getFieldEditors('start_date').length ? 'is-warning' : ''"
-                      @focus="broadcastFieldEditing('start_date')" @blur="broadcastFieldEditing(null)" />
-                    <FieldEditorBadge v-if="getFieldEditors('start_date').length" :editors="getFieldEditors('start_date')" />
+                <form @submit.prevent="saveDetail">
+                  <EditingIndicator
+                    :visible="isEditingByOthers"
+                    :message="warningMessage"
+                    :editors="otherEditors"
+                  />
+                  <div class="mb-3">
+                    <label class="form-label">Jenis KWH Meter</label>
+                    <select v-model="form.jenis_kwh_meter_id" required class="form-select">
+                      <option value="">Pilih Jenis Meter</option>
+                      <option v-for="j in allJenisMeters" :key="j.id" :value="j.id">{{ j.name }} ({{ j.phase === 'single' ? '1 Ph' : '3 Ph' }})</option>
+                    </select>
                   </div>
-                  <div class="col-md-6 position-relative">
-                    <label class="form-label">Tanggal Akhir</label>
-                    <input v-model="form.end_date" type="date"
-                      class="form-control"
-                      :class="getFieldEditors('end_date').length ? 'is-warning' : ''"
-                      @focus="broadcastFieldEditing('end_date')" @blur="broadcastFieldEditing(null)" />
-                    <FieldEditorBadge v-if="getFieldEditors('end_date').length" :editors="getFieldEditors('end_date')" />
+                  <div class="mb-3">
+                    <label class="form-label">KWH Meter (yang terpasang)</label>
+                    <select v-model="form.kwh_meter_id" class="form-select">
+                      <option value="">Belum ditetapkan</option>
+                      <option v-for="m in filteredMeters" :key="m.id" :value="m.id">
+                        {{ m.meter_no }} <template v-if="m.unit_name">— {{ m.unit_name }}</template>
+                      </option>
+                    </select>
+                    <div class="form-hint">Ganti meter = buat periode baru lewat "Tambah Meter Baru". Data historis tetap tersimpan.</div>
                   </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Status</label>
-                  <select v-model="form.status" class="form-select">
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="expired">Expired</option>
-                  </select>
-                </div>
-                <div class="mb-3 position-relative">
-                  <label class="form-label">Catatan</label>
-                  <textarea v-model="form.notes" rows="2"
-                    class="form-control"
-                    :class="getFieldEditors('notes').length ? 'is-warning' : ''"
-                    @focus="broadcastFieldEditing('notes')" @blur="broadcastFieldEditing(null)"></textarea>
-                  <FieldEditorBadge v-if="getFieldEditors('notes').length" :editors="getFieldEditors('notes')" />
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Dokumen PDF (opsional, max 2MB)</label>
-                  <div
-                    class="border border-2 border-dashed rounded p-4 text-center"
-                    :class="documentDragOver ? 'border-primary bg-primary-subtle' : documentError ? 'border-danger bg-danger-subtle' : ''"
-                    @dragover.prevent="documentDragOver = true"
-                    @dragleave="documentDragOver = false"
-                    @drop.prevent="handleDocumentDrop"
-                  >
-                    <input type="file" ref="documentInput" accept=".pdf" class="d-none" @change="handleDocumentSelect" />
-                    <div v-if="documentPreview" class="mb-2">
-                      <div class="d-flex align-items-center justify-content-center gap-2">
-                        <div class="text-start">
-                          <p class="fw-medium mb-0">{{ documentPreview.name }}</p>
-                          <p class="text-muted small mb-0">{{ formatFileSize(documentPreview.size) }}</p>
+                  <div class="mb-3 position-relative">
+                    <label class="form-label">Periode</label>
+                    <input v-model="form.period" type="text" required placeholder="Contoh: 2026-Q3"
+                      class="form-control"
+                      :class="getFieldEditors('period').length ? 'is-warning' : ''"
+                      @focus="broadcastFieldEditing('period')" @blur="broadcastFieldEditing(null)" />
+                    <FieldEditorBadge v-if="getFieldEditors('period').length" :editors="getFieldEditors('period')" />
+                  </div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6 position-relative">
+                      <label class="form-label">Tanggal Mulai</label>
+                      <input v-model="form.start_date" type="date" required
+                        class="form-control"
+                        :class="getFieldEditors('start_date').length ? 'is-warning' : ''"
+                        @focus="broadcastFieldEditing('start_date')" @blur="broadcastFieldEditing(null)" />
+                      <FieldEditorBadge v-if="getFieldEditors('start_date').length" :editors="getFieldEditors('start_date')" />
+                    </div>
+                    <div class="col-md-6 position-relative">
+                      <label class="form-label">Tanggal Akhir</label>
+                      <input v-model="form.end_date" type="date"
+                        class="form-control"
+                        :class="getFieldEditors('end_date').length ? 'is-warning' : ''"
+                        @focus="broadcastFieldEditing('end_date')" @blur="broadcastFieldEditing(null)" />
+                      <FieldEditorBadge v-if="getFieldEditors('end_date').length" :editors="getFieldEditors('end_date')" />
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select v-model="form.status" class="form-select">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="expired">Expired</option>
+                    </select>
+                  </div>
+                  <div class="mb-3 position-relative">
+                    <label class="form-label">Catatan</label>
+                    <textarea v-model="form.notes" rows="2"
+                      class="form-control"
+                      :class="getFieldEditors('notes').length ? 'is-warning' : ''"
+                      @focus="broadcastFieldEditing('notes')" @blur="broadcastFieldEditing(null)"></textarea>
+                    <FieldEditorBadge v-if="getFieldEditors('notes').length" :editors="getFieldEditors('notes')" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Dokumen PDF (opsional, max 2MB)</label>
+                    <div
+                      class="border border-2 border-dashed rounded p-4 text-center"
+                      :class="documentDragOver ? 'border-primary bg-primary-subtle' : documentError ? 'border-danger bg-danger-subtle' : ''"
+                      @dragover.prevent="documentDragOver = true"
+                      @dragleave="documentDragOver = false"
+                      @drop.prevent="handleDocumentDrop"
+                    >
+                      <input type="file" ref="documentInput" accept=".pdf" class="d-none" @change="handleDocumentSelect" />
+                      <div v-if="documentPreview" class="mb-2">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                          <div class="text-start">
+                            <p class="fw-medium mb-0">{{ documentPreview.name }}</p>
+                            <p class="text-muted small mb-0">{{ formatFileSize(documentPreview.size) }}</p>
+                          </div>
                         </div>
+                        <button type="button" @click="removeDocument" class="btn btn-link btn-sm text-danger p-0 mt-1">Hapus file</button>
                       </div>
-                      <button type="button" @click="removeDocument" class="btn btn-link btn-sm text-danger p-0 mt-1">Hapus file</button>
+                      <div v-else>
+                        <p class="text-muted mb-1">Drag & drop atau <button type="button" @click="documentInput.click()" class="btn btn-link btn-sm p-0">pilih file</button></p>
+                        <p class="text-muted small mb-0">Hanya file PDF, maks. 2MB</p>
+                      </div>
                     </div>
-                    <div v-else>
-                      <p class="text-muted mb-1">Drag & drop atau <button type="button" @click="documentInput.click()" class="btn btn-link btn-sm p-0">pilih file</button></p>
-                      <p class="text-muted small mb-0">Hanya file PDF, maks. 2MB</p>
-                    </div>
+                    <p v-if="documentError" class="text-danger small mt-1">{{ documentError }}</p>
                   </div>
-                  <p v-if="documentError" class="text-danger small mt-1">{{ documentError }}</p>
-                </div>
-              </form>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-link btn-sm text-danger p-0" @click="confirmDeleteFromDetail">Hapus konfigurasi ini</button>
+                    <button type="submit" :disabled="detailSaving" class="btn btn-primary">{{ detailSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}</button>
+                  </div>
+                </form>
+              </div>
 
-              <div v-else>
+              <div v-else-if="detailMode === 'add'" class="border rounded p-3 mb-2">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">Tambah Meter Baru</h6>
+                  <button type="button" class="btn btn-sm btn-link p-0" @click="switchDetailMode(null)">Kembali ke riwayat</button>
+                </div>
                 <div class="alert alert-info py-2 small">
-                  Periode lama <strong>{{ detailOld?.period }}</strong> (meter <span class="font-monospace">{{ detailOld?.kwh_meter?.meter_no || 'belum ditetapkan' }}</span>) akan ditutup otomatis sehari sebelum periode baru dimulai (status → expired), lalu konfigurasi meter baru dibuat.
+                  Periode lama <strong>{{ detailOld?.period }}</strong> (meter <span class="font-monospace">{{ detailOld?.kwh_meter?.meter_no || 'belum ditetapkan' }}</span>) akan ditutup otomatis sehari sebelum periode baru dimulai (status → expired), lalu periode baru dibuat untuk meter baru.
                 </div>
                 <div v-if="!replaceMeters.length" class="alert alert-warning py-2 small">
                   Titik ukur ini belum punya KWH meter terdaftar. Tambahkan meter dulu di menu <strong>KWH Meter</strong>, lalu kembali ke sini.
                 </div>
                 <div class="row g-3 mb-3">
                   <div class="col-md-6">
-                    <label class="form-label">Meter Baru (yang akan terpasang)</label>
+                    <label class="form-label">Meter Baru</label>
                     <select v-model="replaceForm.kwh_meter_id" required class="form-select">
                       <option value="">Pilih Meter</option>
                       <option v-for="m in replaceMeters" :key="m.id" :value="m.id">
                         {{ m.meter_no }} <template v-if="m.unit_name">— {{ m.unit_name }}</template>
                       </option>
                     </select>
+                    <div v-if="replaceForm.kwh_meter_id" class="form-hint">
+                      <template v-if="selectedReplaceJenis">Jenis meter: <strong>{{ selectedReplaceJenis.name }}</strong></template>
+                      <span v-else class="text-danger">Meter ini belum punya jenis meter. Lengkapi dulu di menu KWH Meter.</span>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Jenis Meter Baru</label>
-                    <select v-model="replaceForm.jenis_kwh_meter_id" required class="form-select">
-                      <option value="">Pilih Jenis Meter</option>
-                      <option v-for="j in allJenisMeters" :key="j.id" :value="j.id">{{ j.name }} ({{ j.phase === 'single' ? '1 Ph' : '3 Ph' }})</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="row g-3 mb-3">
                   <div class="col-md-6">
                     <label class="form-label">Periode Baru</label>
                     <input v-model="replaceForm.period" type="text" required placeholder="Contoh: 2026-Q3" class="form-control" />
                   </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Tanggal Mulai Baru</label>
-                    <input v-model="replaceForm.start_date" type="date" required class="form-control" />
-                  </div>
                 </div>
                 <div class="row g-3 mb-3">
                   <div class="col-md-6">
-                    <label class="form-label">Tanggal Akhir Baru <span class="text-muted">(opsional)</span></label>
-                    <input v-model="replaceForm.end_date" type="date" class="form-control" />
+                    <label class="form-label">Tanggal Mulai</label>
+                    <input v-model="replaceForm.start_date" type="date" required class="form-control" />
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label">Catatan</label>
-                    <input v-model="replaceForm.notes" type="text" placeholder="Opsional" class="form-control" />
+                    <label class="form-label">Tanggal Akhir <span class="text-muted">(opsional)</span></label>
+                    <input v-model="replaceForm.end_date" type="date" class="form-control" />
                   </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Catatan <span class="text-muted">(opsional)</span></label>
+                  <input v-model="replaceForm.notes" type="text" placeholder="Opsional" class="form-control" />
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button type="button" @click="saveDetail" :disabled="detailSaving" class="btn btn-success">{{ detailSaving ? 'Menyimpan...' : 'Tambah Meter Baru' }}</button>
                 </div>
               </div>
 
               <p v-if="detailMsg" :class="['small mb-0 mt-2', detailMsgOk ? 'text-success' : 'text-danger']">{{ detailMsg }}</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-link btn-sm text-danger p-0 me-auto" @click="confirmDeleteFromDetail">Hapus konfigurasi ini</button>
-              <button type="button" @click="closeDetail" class="btn btn-outline-secondary flex-fill">Batal</button>
-              <button type="button" @click="saveDetail" :disabled="detailSaving" class="btn flex-fill" :class="detailMode === 'add' ? 'btn-success' : 'btn-primary'">
-                {{ detailSaving ? 'Menyimpan...' : detailMode === 'add' ? 'Tambah & Tutup Periode Lama' : 'Simpan' }}
-              </button>
+              <button type="button" @click="closeDetail" class="btn btn-outline-secondary flex-fill">Tutup</button>
             </div>
           </div>
         </div>
@@ -525,6 +534,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/services/api'
+import { IconPencil, IconPlus } from '@tabler/icons-vue'
 import { useEditing } from '@/composables/useEditing'
 import EditingIndicator from '@/components/EditingIndicator.vue'
 import FieldEditorBadge from '@/components/FieldEditorBadge.vue'
@@ -551,6 +561,7 @@ const documentPreview = ref(null)
 const documentDragOver = ref(false)
 const documentError = ref('')
 const existingDocumentPath = ref(null)
+const documentRemoved = ref(false)
 const pagination = ref({ current_page: 1, last_page: 1, from: 0, to: 0, total: 0 })
 const showImport = ref(false)
 const importFile = ref(null)
@@ -655,9 +666,19 @@ const replaceMeters = computed(() => {
   return allKwhMeters.value.filter(m => String(m.titik_ukur_id) === String(tuId) && String(m.id) !== String(detailOld.value?.kwh_meter_id))
 })
 
+const selectedReplaceMeter = computed(() =>
+  allKwhMeters.value.find(m => String(m.id) === String(replaceForm.value.kwh_meter_id)) || null
+)
+
+const selectedReplaceJenis = computed(() => {
+  const meter = selectedReplaceMeter.value
+  if (!meter?.jenis_kwh_meter_id) return null
+  return allJenisMeters.value.find(j => String(j.id) === String(meter.jenis_kwh_meter_id)) || null
+})
+
 watch(() => replaceForm.value.kwh_meter_id, (id) => {
   const m = allKwhMeters.value.find(x => String(x.id) === String(id))
-  if (m && m.jenis_kwh_meter_id) replaceForm.value.jenis_kwh_meter_id = m.jenis_kwh_meter_id
+  replaceForm.value.jenis_kwh_meter_id = m?.jenis_kwh_meter_id || ''
 })
 
 function toDateInput(d) {
@@ -687,6 +708,7 @@ async function openDetail(k) {
   existingDocumentPath.value = k.document_path || null
   documentPreview.value = k.document_path ? { name: k.document_path.split('/').pop(), size: 0, file: null } : null
   documentError.value = ''
+  documentRemoved.value = false
   detailMode.value = 'edit'
   startEditing()
   startFormWatch()
@@ -713,9 +735,12 @@ function switchDetailMode(mode) {
     const oldEnd = detailOld.value?.end_date ? new Date(detailOld.value.end_date) : null
     const defaultStart = oldEnd && oldEnd >= today ? new Date(oldEnd.getTime() + 86400000) : today
     replaceForm.value = { kwh_meter_id: '', jenis_kwh_meter_id: '', period: '', start_date: toDateInput(defaultStart), end_date: '', notes: '' }
-  } else {
+  } else if (mode === 'edit') {
     startEditing()
     startFormWatch()
+  } else {
+    stopFormWatch()
+    stopEditing()
   }
 }
 
@@ -741,10 +766,12 @@ async function saveDetail() {
       if (val !== null && val !== undefined) formData.append(key, val)
     }
     if (hasDocument) formData.append('document', documentPreview.value.file)
+    if (documentRemoved.value && !hasDocument) formData.append('remove_document', '1')
     formData.append('_method', 'PUT')
     await api.post(`/konfigurasi-meters/${editingId.value}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     detailMsg.value = 'Perubahan tersimpan'
     detailMsgOk.value = true
+    documentRemoved.value = false
     await refreshDetail()
     fetchData()
   } catch (e) {
@@ -761,15 +788,20 @@ async function submitReplace() {
     detailMsgOk.value = false
     return
   }
-  if (!replaceForm.value.kwh_meter_id || !replaceForm.value.jenis_kwh_meter_id || !replaceForm.value.period || !replaceForm.value.start_date) {
-    detailMsg.value = 'Lengkapi meter, jenis meter, periode, dan tanggal mulai'
+  if (!replaceForm.value.kwh_meter_id || !replaceForm.value.period || !replaceForm.value.start_date) {
+    detailMsg.value = 'Lengkapi meter, periode, dan tanggal mulai'
+    detailMsgOk.value = false
+    return
+  }
+  if (!replaceForm.value.jenis_kwh_meter_id) {
+    detailMsg.value = 'Meter terpilih belum punya jenis meter. Lengkapi dulu di menu KWH Meter.'
     detailMsgOk.value = false
     return
   }
   detailSaving.value = true
   detailMsg.value = ''
   try {
-    await api.post('/konfigurasi-meters/replace', {
+    const { data: res } = await api.post('/konfigurasi-meters/replace', {
       titik_ukur_id: detailTU.value.id,
       old_konfigurasi_id: detailOld.value.id,
       kwh_meter_id: replaceForm.value.kwh_meter_id,
@@ -779,14 +811,40 @@ async function submitReplace() {
       end_date: replaceForm.value.end_date || null,
       notes: replaceForm.value.notes || null,
     })
-    detailMsg.value = 'Meter baru berhasil ditambahkan. Periode lama ditutup otomatis.'
+    const created = res?.data?.konfigurasi || null
+    detailMsg.value = res?.message || 'Meter baru berhasil ditambahkan. Periode lama ditutup otomatis.'
     detailMsgOk.value = true
-    await refreshDetail()
+    try {
+      await refreshDetail()
+    } catch (err) { console.error(err) }
     fetchData()
     fetchTrashed()
     replaceForm.value = { kwh_meter_id: '', jenis_kwh_meter_id: '', period: '', start_date: '', end_date: '', notes: '' }
+    if (created) {
+      detailOld.value = created
+      editingId.value = created.id
+      editingRecordId.value = created.id
+      form.value = {
+        titik_ukur_id: created.titik_ukur_id,
+        kwh_meter_id: created.kwh_meter_id || '',
+        jenis_kwh_meter_id: created.jenis_kwh_meter_id,
+        period: created.period,
+        start_date: created.start_date?.split('T')[0] || '',
+        end_date: created.end_date?.split('T')[0] || '',
+        status: created.status,
+        notes: created.notes || '',
+      }
+      existingDocumentPath.value = created.document_path || null
+      documentPreview.value = created.document_path ? { name: created.document_path.split('/').pop(), size: 0, file: null } : null
+      documentRemoved.value = false
+      detailMode.value = 'edit'
+      startEditing()
+      startFormWatch()
+    }
   } catch (e) {
-    detailMsg.value = e.response?.data?.message || e.response?.data?.errors?.start_date?.[0] || 'Gagal menambahkan meter'
+    const prefix = e.response ? `Gagal (HTTP ${e.response.status}): ` : ''
+    const errors = e.response?.data?.errors
+    detailMsg.value = prefix + (e.response?.data?.message || errors?.start_date?.[0] || errors?.period?.[0] || 'Tidak dapat terhubung ke server.')
     detailMsgOk.value = false
   } finally {
     detailSaving.value = false
@@ -882,6 +940,7 @@ function openForm(item = null) {
   documentPreview.value = null
   documentError.value = ''
   existingDocumentPath.value = null
+  documentRemoved.value = false
   if (item) {
     editingId.value = item.id
     form.value = { titik_ukur_id: item.titik_ukur_id, kwh_meter_id: item.kwh_meter_id || '', jenis_kwh_meter_id: item.jenis_kwh_meter_id, period: item.period, start_date: item.start_date?.split('T')[0] || '', end_date: item.end_date?.split('T')[0] || '', status: item.status, notes: item.notes || '' }
@@ -911,6 +970,7 @@ async function saveForm() {
         if (val !== '' && val !== null && val !== undefined) formData.append(key, val)
       }
       if (hasDocument) formData.append('document', documentPreview.value.file)
+      if (documentRemoved.value && !hasDocument) formData.append('remove_document', '1')
 
       if (editingId.value) {
         formData.append('_method', 'PUT')
@@ -926,6 +986,7 @@ async function saveForm() {
     stopFormWatch()
     stopEditing()
     editingRecordId.value = null
+    documentRemoved.value = false
     await fetchData()
   } catch (e) { formError.value = e.response?.data?.message || e.response?.data?.errors?.document?.[0] || 'Terjadi kesalahan' } finally { saving.value = false }
 }
@@ -958,10 +1019,12 @@ function validateAndSetDocument(file) {
     documentError.value = 'Ukuran file maksimal 2MB'
     return
   }
+  documentRemoved.value = false
   documentPreview.value = { name: file.name, size: file.size, file }
 }
 
 function removeDocument() {
+  documentRemoved.value = !!existingDocumentPath.value
   documentPreview.value = null
   documentError.value = ''
   existingDocumentPath.value = null

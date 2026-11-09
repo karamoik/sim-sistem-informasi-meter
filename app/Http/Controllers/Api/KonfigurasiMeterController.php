@@ -118,6 +118,7 @@ class KonfigurasiMeterController extends BaseApiController
             'status'             => 'sometimes|in:active,inactive,expired',
             'notes'              => 'sometimes|nullable|string',
             'document'           => 'nullable|file|mimes:pdf|max:2048',
+            'remove_document'    => 'sometimes|boolean',
         ]);
 
         if ($request->hasFile('document')) {
@@ -126,9 +127,12 @@ class KonfigurasiMeterController extends BaseApiController
             }
 
             $validated['document_path'] = $this->handleDocumentUpload($request->file('document'));
+        } elseif ($request->boolean('remove_document') && $konfigurasiMeter->document_path) {
+            Storage::disk('minio')->delete($konfigurasiMeter->document_path);
+            $validated['document_path'] = null;
         }
 
-        unset($validated['document']);
+        unset($validated['document'], $validated['remove_document']);
 
         $konfigurasiMeter->update($validated);
 

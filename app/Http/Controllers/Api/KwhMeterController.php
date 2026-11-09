@@ -45,9 +45,15 @@ class KwhMeterController extends BaseApiController
             });
         }
 
+        $paginate = !str_ends_with($request->path(), 'all');
         $perPage = (int) $request->input('per_page', 20);
 
-        $meters = $query->orderBy('meter_no')->paginate($perPage);
+        $meters = $query->orderBy('meter_no');
+        if ($paginate) {
+            $meters = $meters->paginate($perPage);
+        } else {
+            $meters = $meters->get();
+        }
 
         return $this->success($meters);
     }
