@@ -148,8 +148,8 @@
                 <div class="mb-3">
                   <label class="form-label">Role</label>
                   <select v-model="form.role" required class="form-select">
-                    <option value="admin">Admin - Full Akses</option>
-                    <option value="operator">Operator - CRUD Data</option>
+                    <option value="admin">Admin - Akses Penuh</option>
+                    <option value="operator">Operator - Kelola Data</option>
                     <option value="viewer">Viewer - Hanya Lihat</option>
                   </select>
                 </div>

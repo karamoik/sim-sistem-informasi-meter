@@ -7,14 +7,14 @@
           <div class="flex-fill bg-purple text-white p-5 d-flex flex-column justify-content-center"
                style="background: linear-gradient(135deg, #5f3dc4, #7c3aed, #6d28d9); min-height: 100vh;">
             <div class="mb-4">
-              <h1 class="display-5 fw-bold mb-3">Join Us<br/>Today</h1>
+              <h1 class="display-5 fw-bold mb-3">Bergabung<br/>dengan SIM</h1>
               <p class="fs-5 text-white-50">
-                Create your account and start managing your content with our powerful CRUD application.
+                Sistem Informasi Meter untuk pemantauan, pencatatan, dan pengelolaan data kWh meter secara terpadu.
               </p>
             </div>
             <div class="d-flex gap-4 text-white-50 small">
-              <span>Fast & Secure</span>
-              <span>Free Forever</span>
+              <span>Monitoring real-time</span>
+              <span>Data terpusat</span>
             </div>
           </div>
         </div>
@@ -22,8 +22,9 @@
         <!-- Right Panel - Form -->
         <div class="col-lg-6 d-flex align-items-center justify-content-center p-4">
           <div class="w-100" style="max-width: 26rem;">
-            <h2 class="card-title mb-1">Create account</h2>
-            <p class="text-muted mb-4">Fill in the details below to get started</p>
+            <div class="text-primary fw-semibold small mb-1">SIM Sistem Informasi Meter</div>
+            <h2 class="card-title mb-1">Buat Akun</h2>
+            <p class="text-muted mb-4">Lengkapi data di bawah ini untuk mulai menggunakan SIM</p>
 
             <div class="card">
               <div class="card-body">
@@ -44,24 +45,24 @@
                 <form @submit.prevent="register">
                   <!-- Name -->
                   <div class="mb-3">
-                    <label class="form-label">Full name</label>
+                    <label class="form-label">Nama Lengkap</label>
                     <input
                       v-model="form.name"
                       type="text"
                       required
-                      placeholder="John Doe"
+                      placeholder="Masukkan nama lengkap"
                       class="form-control"
                     />
                   </div>
 
                   <!-- Email -->
                   <div class="mb-3">
-                    <label class="form-label">Email address</label>
+                    <label class="form-label">Alamat Email</label>
                     <input
                       v-model="form.email"
                       type="email"
                       required
-                      placeholder="you@example.com"
+                      placeholder="nama@email.com"
                       class="form-control"
                     />
                   </div>
@@ -74,7 +75,7 @@
                         v-model="form.password"
                         :type="showPassword ? 'text' : 'password'"
                         required
-                        placeholder="Min. 8 characters"
+                        placeholder="Minimal 8 karakter"
                         class="form-control"
                       />
                       <button
@@ -82,19 +83,19 @@
                         class="btn btn-outline-secondary"
                         @click="showPassword = !showPassword"
                       >
-                        {{ showPassword ? 'Hide' : 'Show' }}
+                        {{ showPassword ? 'Sembunyikan' : 'Tampilkan' }}
                       </button>
                     </div>
                   </div>
 
                   <!-- Confirm Password -->
                   <div class="mb-3">
-                    <label class="form-label">Confirm password</label>
+                    <label class="form-label">Konfirmasi Password</label>
                     <input
                       v-model="form.password_confirmation"
                       :type="showPassword ? 'text' : 'password'"
                       required
-                      placeholder="Repeat your password"
+                      placeholder="Ulangi password"
                       class="form-control"
                     />
                   </div>
@@ -107,7 +108,7 @@
                       class="btn btn-primary w-100"
                     >
                       <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                      {{ loading ? 'Creating account...' : 'Create account' }}
+                      {{ loading ? 'Membuat akun...' : 'Buat Akun' }}
                     </button>
                   </div>
                 </form>
@@ -115,8 +116,8 @@
             </div>
 
             <div class="text-center text-muted mt-4">
-              Already have an account?
-              <router-link to="/login" class="link-primary">Sign in</router-link>
+              Sudah punya akun?
+              <router-link to="/login" class="link-primary">Masuk</router-link>
             </div>
           </div>
         </div>
@@ -155,7 +156,7 @@ async function register() {
             const errors = e.response.data.errors
             error.value = Object.values(errors).flat().join(' ')
         } else {
-            error.value = e.response?.data?.message || 'Registration failed'
+            error.value = e.response?.data?.message || 'Pendaftaran gagal'
         }
     } finally {
         loading.value = false

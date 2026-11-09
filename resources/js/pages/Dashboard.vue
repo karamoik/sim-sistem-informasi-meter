@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between mb-4 gap-3">
       <div>
-        <h1 class="page-title mb-1">Monitoring KWH Meter</h1>
-        <p class="text-muted small">Real-time status jaringan kelistrikan se-Indonesia</p>
+        <h1 class="page-title mb-1">SIM Sistem Informasi Meter</h1>
+        <p class="text-muted small">Monitoring KWH meter secara real-time se-Indonesia</p>
       </div>
       <div class="d-flex align-items-center gap-3">
         <div class="d-flex align-items-center gap-2 bg-white border rounded-3 px-3 py-2 small">

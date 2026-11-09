@@ -3,6 +3,10 @@
     <div class="container container-tight py-4">
       <div class="card card-lg">
         <div class="card-body p-5">
+          <div class="text-center mb-3">
+            <div class="fw-bold">SIM</div>
+            <div class="text-secondary small">Sistem Informasi Meter</div>
+          </div>
           <h2 class="card-title text-center mb-2">Reset Password</h2>
           <p class="text-secondary text-center mb-4">
             Masukkan password baru Anda.

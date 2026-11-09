@@ -9,9 +9,12 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <h1 class="navbar-brand navbar-brand-autodark">
-          <router-link to="/" class="d-flex align-items-center gap-2">
+          <router-link to="/" class="d-flex align-items-center gap-2" title="SIM Sistem Informasi Meter">
             <IconBolt size="24" class="text-primary" />
-            <span class="fw-bold">Monitoring</span>
+            <span class="d-flex flex-column lh-1">
+              <span class="fw-bold">SIM</span>
+              <span class="text-body-secondary fw-normal" style="font-size: .625rem; letter-spacing: .04em;">SISTEM INFORMASI METER</span>
+            </span>
           </router-link>
         </h1>
         <div class="collapse navbar-collapse" id="sidebar-menu">
@@ -160,7 +163,7 @@
         <div class="container-fluid">
           <div class="row align-items-center">
             <div class="col text-center">
-              <span class="text-body-secondary">Monitoring Dashboard &copy; {{ new Date().getFullYear() }}</span>
+              <span class="text-body-secondary">SIM Sistem Informasi Meter &copy; {{ new Date().getFullYear() }}</span>
             </div>
           </div>
         </div>

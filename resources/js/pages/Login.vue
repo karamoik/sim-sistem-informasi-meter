@@ -7,8 +7,8 @@
           <div class="brand-icon-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11"/></svg>
           </div>
-          <h1 class="brand-title">Monitoring Dashboard</h1>
-          <p class="brand-subtitle">Sistem Monitoring KWH Meter</p>
+          <h1 class="brand-title">SIM Sistem Informasi Meter</h1>
+          <p class="brand-subtitle">Monitoring &amp; pengelolaan data kWh meter terpadu</p>
         </div>
 
         <div class="illustration-area">
@@ -41,7 +41,7 @@
         </div>
 
         <div class="quote-section">
-          <p>"Platform monitoring yang handal untuk kebutuhan pengukuran listrik Anda."</p>
+          <p>"Sistem Informasi Meter untuk pemantauan, pencatatan, dan pengelolaan data kWh meter secara terpadu."</p>
         </div>
 
         <div class="dots-indicator">
@@ -60,6 +60,7 @@
             <div class="form-logo">
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" stroke-width="1.5" stroke="#4263eb" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11"/></svg>
             </div>
+            <div class="text-primary fw-semibold small mb-1">SIM Sistem Informasi Meter</div>
             <h2>Selamat Datang</h2>
             <p>Masuk ke akun Anda untuk melanjutkan</p>
           </div>

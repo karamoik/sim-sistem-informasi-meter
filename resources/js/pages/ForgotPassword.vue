@@ -9,6 +9,8 @@
             <path d="M18.5 10l-1.5 -1.5" />
           </svg>
         </div>
+        <div class="fw-bold">SIM</div>
+        <div class="text-secondary small">Sistem Informasi Meter</div>
       </div>
 
       <h2 class="h3 text-center mb-2">Reset Password</h2>

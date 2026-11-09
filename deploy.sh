@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # ============================================
-# Laravel 13 + Vue SPA - Deploy Script
+# SIM Sistem Informasi Meter - Deploy Script
+# Laravel + Vue SPA
 # ============================================
 # Usage: chmod +x deploy.sh && ./deploy.sh
 # Run from project root directory on server
@@ -10,12 +11,12 @@
 set -e
 
 echo "========================================="
-echo "  Laravel JWT-CRUD Deployment Script"
+echo "  SIM Sistem Informasi Meter Deployment Script"
 echo "========================================="
 
 # --- Configuration ---
 APP_DIR=$(pwd)
-PHP_VERSION="8.2"
+PHP_VERSION="8.3"
 NODE_VERSION="18"
 ENV_FILE=".env"
 BACKUP_DIR="storage/backups"
@@ -62,7 +63,7 @@ else
 fi
 
 # --- Step 4: Environment Setup ---
-if [ ! grep -q "APP_KEY=" "$ENV_FILE" ] || [ -z "$(grep APP_KEY= $ENV_FILE | cut -d '=' -f2)" ]; then
+if ! grep -q "APP_KEY=" "$ENV_FILE" || [ -z "$(grep APP_KEY= $ENV_FILE | cut -d '=' -f2)" ]; then
     info "Generating APP_KEY..."
     php artisan key:generate --force
     success "APP_KEY generated"
@@ -70,7 +71,7 @@ else
     info "APP_KEY already set"
 fi
 
-if [ ! grep -q "JWT_SECRET=" "$ENV_FILE" ] || [ -z "$(grep JWT_SECRET= $ENV_FILE | cut -d '=' -f2)" ]; then
+if ! grep -q "JWT_SECRET=" "$ENV_FILE" || [ -z "$(grep JWT_SECRET= $ENV_FILE | cut -d '=' -f2)" ]; then
     info "Generating JWT_SECRET..."
     php artisan jwt:secret --force
     success "JWT_SECRET generated"

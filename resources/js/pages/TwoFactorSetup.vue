@@ -3,9 +3,9 @@
     <div class="mb-4">
       <router-link to="/" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-3">
         <span>&larr;</span>
-        <span>Back to Dashboard</span>
+        <span>Kembali ke Dashboard</span>
       </router-link>
-      <h1 class="h2 fw-bold">Two-Factor Authentication</h1>
+      <h1 class="h2 fw-bold">Autentikasi Dua Faktor</h1>
       <p class="text-muted small mt-1">Tambahkan lapisan keamanan ekstra ke akun Anda</p>
     </div>
 

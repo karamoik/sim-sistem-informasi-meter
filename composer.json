@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "karamoik/sim-sistem-informasi-meter",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "SIM Sistem Informasi Meter - platform monitoring dan pengelolaan data kWh meter.",
+    "keywords": ["laravel", "vue", "kwh-meter", "monitoring", "sim"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

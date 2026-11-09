@@ -1,58 +1,216 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIM Sistem Informasi Meter
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**SIM Sistem Informasi Meter** adalah aplikasi web untuk monitoring, pencatatan, dan pengelolaan data kWh meter secara terpadu. Aplikasi ini mendukung pemantauan status meter secara real-time, pengelolaan master data kelistrikan, load profile, konfigurasi meter per periode, serta import/export data.
 
-## About Laravel
+Dibangun dengan **Laravel** sebagai backend API dan **Vue 3 + Vite** sebagai single-page application (SPA).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Dashboard real-time** — ringkasan total gardu induk, titik ukur, meter, status online/offline, dan konsumsi.
+- **Master data** — Gardu Induk, Titik Ukur, Jenis kWh Meter, dan kWh Meter (termasuk soft delete, restore, dan force delete).
+- **Konfigurasi meter** — pemetaan meter per titik ukur dan periode, riwayat penggantian meter, serta unggah dokumen PDF.
+- **Load profile** — monitoring harian/mingguan, availability data, dan agregasi konsumsi.
+- **Import & export CSV** — untuk seluruh modul master data dan konfigurasi.
+- **Manajemen pengguna** — role `admin`, `operator`, `viewer`, serta pembatasan akses per gardu induk (unit scope).
+- **Keamanan** — JWT authentication, captcha matematika, 2FA (Google Authenticator), session fingerprint, pembatasan percobaan login, dan activity log.
+- **Realtime** — broadcast perubahan data dan indikator editing melalui Laravel Reverb.
+- **Pengaturan pengguna** — profil, ganti password, linked devices, preferensi notifikasi, dan tampilan terang/gelap.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Teknologi
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Komponen | Teknologi |
+|---|---|
+| Backend | Laravel 13, PHP 8.3 |
+| Frontend | Vue 3, Vue Router, Vite, Tabler UI |
+| Autentikasi | JWT (`php-open-source-saver/jwt-auth`), Google2FA |
+| Realtime | Laravel Reverb + Laravel Echo |
+| Database | MySQL |
+| Penyimpanan dokumen | MinIO / S3-compatible storage |
+| PDF processing | `smalot/pdfparser` + pemindaian heuristik |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Kebutuhan Sistem
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- PHP **8.3+** dengan ekstensi standar Laravel
+- Composer **2.x**
+- Node.js **20+** dan npm
+- MySQL **8.x**
+- MinIO (opsional, untuk penyimpanan dokumen konfigurasi)
+- Laravel Reverb (opsional, untuk fitur realtime)
+
+---
+
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone repository
+git clone https://github.com/karamoik/sim-sistem-informasi-meter.git
+cd sim-sistem-informasi-meter
 
-php artisan boost:install
+# 2. Install dependency backend
+composer install
+
+# 3. Siapkan environment
+cp .env.example .env
+php artisan key:generate
+php artisan jwt:secret
+
+# 4. Sesuaikan koneksi database, MinIO, dan Reverb di .env
+
+# 5. Jalankan migrasi dan seeder
+php artisan migrate --seed
+
+# 6. Install dependency frontend
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Menjalankan Aplikasi
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Jalankan setiap proses di terminal terpisah:
 
-## Code of Conduct
+```bash
+# Backend API
+php artisan serve
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Frontend (hot reload)
+npm run dev
 
-## Security Vulnerabilities
+# Realtime server (opsional)
+php artisan reverb:start
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Queue worker (opsional)
+php artisan queue:work
+```
 
-## License
+Aplikasi dapat diakses melalui `APP_URL` yang diatur di `.env` (default `http://localhost`).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Build untuk Produksi
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci
+npm run build
+
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+```
+
+Pastikan nilai berikut sudah benar di environment produksi:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://domain-anda.com
+```
+
+---
+
+## Konfigurasi Environment Penting
+
+| Variabel | Keterangan |
+|---|---|
+| `APP_NAME` | Nama aplikasi, default `SIM Sistem Informasi Meter` |
+| `APP_URL` | URL publik aplikasi |
+| `DB_*` | Koneksi database MySQL |
+| `JWT_SECRET` | Secret penandatangan token JWT |
+| `JWT_TTL` | Masa berlaku token (menit) |
+| `BROADCAST_CONNECTION` | `reverb` untuk realtime, `log` untuk development |
+| `REVERB_*` | Konfigurasi host, port, dan kredensial Reverb |
+| `MINIO_*` | Kredensial dan endpoint penyimpanan dokumen |
+| `FILESYSTEM_DISK` | Disk penyimpanan dokumen (`minio` untuk produksi) |
+
+> **Penting:** jangan commit file `.env`. File tersebut sudah masuk `.gitignore`.
+
+---
+
+## Struktur Project
+
+```text
+app/
+├── Events/                 # Event realtime (Reverb)
+├── Http/
+│   ├── Controllers/Api/    # Controller API
+│   ├── Middleware/         # Role, unit scope, session
+│   └── Requests/           # Form request validation
+├── Models/                 # Model Eloquent
+├── Services/               # Auth, 2FA, PDF scanner, reset password
+└── Console/Commands/       # Command artisan (demo load profile)
+
+database/
+├── migrations/             # Skema database
+└── seeders/                # Data awal/demo
+
+resources/
+├── css/app.css             # Entry CSS
+├── js/
+│   ├── pages/              # Halaman Vue
+│   ├── components/         # Komponen Vue
+│   ├── composables/        # Composable Vue
+│   ├── router/             # Vue Router
+│   └── services/           # Axios API client
+└── views/welcome.blade.php # Entry SPA
+
+routes/
+├── api.php                 # Route API
+└── web.php                 # Route SPA fallback
+```
+
+---
+
+## Autentikasi API
+
+1. Ambil captcha dari `GET /api/captcha`.
+2. Kirim kredensial ke `POST /api/auth/login` beserta `captcha_token`, `captcha_answer`, dan `fingerprint_id`.
+3. Simpan `access_token` dan kirim sebagai header `Authorization: Bearer <token>`.
+4. Sertakan header `X-Session-Fingerprint` pada setiap request terautentikasi.
+5. Jika 2FA aktif, verifikasi melalui `POST /api/auth/2fa/verify`.
+
+Semua response API menggunakan format konsisten:
+
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": {}
+}
+```
+
+---
+
+## Data Awal (Seeder)
+
+`php artisan migrate --seed` akan membuat akun dan data demo, termasuk akun administrator default. **Segera ubah password akun default dan hapus akun demo sebelum digunakan di produksi.**
+
+Untuk produksi, disarankan membuat akun admin pertama secara manual atau melalui command khusus, lalu menonaktifkan registrasi publik.
+
+---
+
+## Checklist Keamanan Produksi
+
+- [ ] Set `APP_ENV=production` dan `APP_DEBUG=false`.
+- [ ] Ganti semua password akun default dari seeder.
+- [ ] Tutup atau batasi endpoint registrasi publik.
+- [ ] Gunakan HTTPS dan batasi `config/cors.php` ke origin frontend.
+- [ ] Rotasi `APP_KEY` dan `JWT_SECRET` bila pernah terekspos.
+- [ ] Batasi akses jaringan ke MinIO dan gunakan kredensial kuat.
+- [ ] Jalankan `composer audit` dan `npm audit` secara berkala.
+- [ ] Aktifkan backup database dan dokumen secara rutin.
+- [ ] Pastikan queue worker dan Reverb dijalankan sebagai service.
+
+---
+
+## Lisensi
+
+Project ini menggunakan lisensi [MIT](https://opensource.org/licenses/MIT).

@@ -6,7 +6,10 @@
         <div class="avatar avatar-lg bg-green text-white d-flex align-items-center justify-content-center">
           <span style="font-size: 1.5rem;">&#128274;</span>
         </div>
-        <span class="fw-bold fs-3 ms-2">JWT CRUD</span>
+        <span class="d-flex flex-column lh-1 ms-2">
+          <span class="fw-bold fs-3">SIM</span>
+          <span class="text-secondary small">Sistem Informasi Meter</span>
+        </span>
       </div>
 
       <div class="card shadow-lg">
